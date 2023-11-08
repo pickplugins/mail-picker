@@ -1,12 +1,13 @@
 <?php
 
-if ( ! defined('ABSPATH')) exit;  // if direct access
+if (!defined('ABSPATH')) exit;  // if direct access
 
 
 add_shortcode('mail_picker_subscriber_source_check', 'mail_picker_subscriber_source_check');
 add_action('mail_picker_subscriber_source_check', 'mail_picker_subscriber_source_check');
 
-function mail_picker_subscriber_source_check(){
+function mail_picker_subscriber_source_check()
+{
 
     $responses = array();
     $meta_query = array();
@@ -21,7 +22,7 @@ function mail_picker_subscriber_source_check(){
     );
 
     $campaign_query = new WP_Query(
-        array (
+        array(
             'post_type' => 'subscriber_source',
             'post_status' => 'publish',
             'orderby' => 'date',
@@ -33,16 +34,16 @@ function mail_picker_subscriber_source_check(){
         )
     );
 
-    if ($campaign_query->have_posts()):
+    if ($campaign_query->have_posts()) :
 
         $responses['subscriber_source_found'] = 'yes';
 
-        while ( $campaign_query->have_posts() ) :
+        while ($campaign_query->have_posts()) :
 
             $campaign_query->the_post();
 
             $post_id = get_the_ID();
-            $current_datetime = date('Y-m-d H:i:s', strtotime('+'.$gmt_offset.' hour'));
+            $current_datetime = date('Y-m-d H:i:s', strtotime('+' . $gmt_offset . ' hour'));
             $last_check_datetime = get_post_meta($post_id, 'last_check_datetime', true);
             $last_check_datetime = !empty($last_check_datetime) ? $last_check_datetime : date('Y-m-d H:i:s');
             $next_check_datetime = get_post_meta($post_id, 'next_check_datetime', true);
@@ -57,26 +58,26 @@ function mail_picker_subscriber_source_check(){
 
 
             $interval = $schedules[$recurrence_interval]['interval'];
-            $interval = $interval.' seconds';
+            $interval = $interval . ' seconds';
 
 
             //if(strtotime($next_check_datetime) < strtotime($current_datetime) ){
 
-                $active_source = get_post_meta($post_id, 'active_source', true);
+            $active_source = get_post_meta($post_id, 'active_source', true);
 
-                //var_dump($active_source);
-
-
-                do_action('mail_picker_subscriber_source_check_'.$active_source, $post_id);
+            //var_dump($active_source);
 
 
-                $last_check_datetime = date('Y-m-d H:i:s', strtotime($last_check_datetime));
-                $next_check_datetime = date('Y-m-d H:i:s', strtotime($last_check_datetime . ' + '.$interval));
+            do_action('mail_picker_subscriber_source_check_' . $active_source, $post_id);
 
-                update_post_meta($post_id, 'last_check_datetime', $current_datetime);
-                update_post_meta($post_id, 'next_check_datetime', $next_check_datetime);
 
-            //}
+            $last_check_datetime = date('Y-m-d H:i:s', strtotime($last_check_datetime));
+            $next_check_datetime = date('Y-m-d H:i:s', strtotime($last_check_datetime . ' + ' . $interval));
+
+            update_post_meta($post_id, 'last_check_datetime', $current_datetime);
+            update_post_meta($post_id, 'next_check_datetime', $next_check_datetime);
+
+        //}
 
 
 
@@ -84,64 +85,61 @@ function mail_picker_subscriber_source_check(){
         endwhile;
 
         wp_reset_query();
-    else:
+    else :
 
         $responses['subscriber_source_found'] = 'no';
 
 
     endif;
-
-
-
-
 }
 
 
 add_action('mail_picker_subscriber_source_check_registered_users', 'mail_picker_subscriber_source_check_registered_users');
 
-function mail_picker_subscriber_source_check_registered_users($post_id){
+function mail_picker_subscriber_source_check_registered_users($post_id)
+{
 
 
-    $send_confirmation_mail 	= get_post_meta( $post_id, 'send_confirmation_mail', true);
-    $confirmation_mail_template 	= get_post_meta( $post_id, 'confirmation_mail_template', true);
-    $confirmation_mail_subject 	= get_post_meta( $post_id, 'confirmation_mail_subject', true);
-    $confirmation_mail_from_email 	= get_post_meta( $post_id, 'confirmation_mail_from_email', true);
-    $confirmation_mail_from_name 	= get_post_meta( $post_id, 'confirmation_mail_from_name', true);
-    $confirmation_mail_reply_to_email 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_email', true);
-    $confirmation_mail_reply_to_name 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_name', true);
+    $send_confirmation_mail     = get_post_meta($post_id, 'send_confirmation_mail', true);
+    $confirmation_mail_template     = get_post_meta($post_id, 'confirmation_mail_template', true);
+    $confirmation_mail_subject     = get_post_meta($post_id, 'confirmation_mail_subject', true);
+    $confirmation_mail_from_email     = get_post_meta($post_id, 'confirmation_mail_from_email', true);
+    $confirmation_mail_from_name     = get_post_meta($post_id, 'confirmation_mail_from_name', true);
+    $confirmation_mail_reply_to_email     = get_post_meta($post_id, 'confirmation_mail_reply_to_email', true);
+    $confirmation_mail_reply_to_name     = get_post_meta($post_id, 'confirmation_mail_reply_to_name', true);
 
-    $subscriber_status 	= get_post_meta( $post_id, 'subscriber_status', true);
-    $subscriber_status_after_confirm 	= get_post_meta( $post_id, 'subscriber_status_after_confirm', true);
-    $subscriber_list	= get_post_meta( $post_id, 'subscriber_list', true);
+    $subscriber_status     = get_post_meta($post_id, 'subscriber_status', true);
+    $subscriber_status_after_confirm     = get_post_meta($post_id, 'subscriber_status_after_confirm', true);
+    $subscriber_list    = get_post_meta($post_id, 'subscriber_list', true);
 
     $gmt_offset = get_option('gmt_offset');
-    $current_datetime = date('Y-m-d H:i:s', strtotime('+'.$gmt_offset.' hour'));
+    $current_datetime = date('Y-m-d H:i:s', strtotime('+' . $gmt_offset . ' hour'));
 
 
     $active_source = get_post_meta($post_id, 'active_source', true);
     $meta_query = array();
 
     $meta_query[] = array(
-        'key' => 'subscriber_source_check_'.$post_id,
+        'key' => 'subscriber_source_check_' . $post_id,
         'compare' => 'NOT EXISTS',
     );
 
 
     $users = get_users(
         array(
-        //'role'    => 'administrator',
-        'orderby' => 'ID',
-        'order'   => 'ASC',
-        'number'  => 1,
-        'paged'   => 1,
-        'meta_query' => $meta_query,
+            //'role'    => 'administrator',
+            'orderby' => 'ID',
+            'order'   => 'ASC',
+            'number'  => 1,
+            'paged'   => 1,
+            'meta_query' => $meta_query,
 
         )
     );
 
 
 
-    foreach($users as $user){
+    foreach ($users as $user) {
         $user_id = $user->ID;
         $user_email = $user->user_email;
         $display_name = $user->display_name;
@@ -150,7 +148,7 @@ function mail_picker_subscriber_source_check_registered_users($post_id){
 
 
         $formFieldData = array();
-        $formFieldData['subscriber_email'] = $user_email;
+        $formFieldData['email'] = $user_email;
         $formFieldData['first_name'] = $display_name;
         $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -175,9 +173,9 @@ function mail_picker_subscriber_source_check_registered_users($post_id){
 
 
         // Check for error in the response
-        if (is_wp_error($response)){
+        if (is_wp_error($response)) {
             echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-        }else{
+        } else {
             // data.
 
             $subscriber_data = json_decode(wp_remote_retrieve_body($response));
@@ -192,26 +190,26 @@ function mail_picker_subscriber_source_check_registered_users($post_id){
             $total_submission = !empty($total_submission) ? $total_submission : 0;
 
             update_post_meta($post_id, 'last_submission_date', $current_datetime);
-            update_post_meta($post_id, 'total_submission',(int) $total_submission + 1);
+            update_post_meta($post_id, 'total_submission', (int) $total_submission + 1);
 
 
-            if($status == 'success'){
-                $subscriber_id = isset($subscriber_data->subscriber_id)? $subscriber_data->subscriber_id : '';
+            if ($status == 'success') {
+                $subscriber_id = isset($subscriber_data->subscriber_id) ? $subscriber_data->subscriber_id : '';
 
 
-                if($send_confirmation_mail == 'yes'){
+                if ($send_confirmation_mail == 'yes') {
 
                     $mail_picker_settings = get_option('mail_picker_settings');
                     $site_logo_id = isset($mail_picker_settings['site_logo']) ? $mail_picker_settings['site_logo'] : '';
 
 
                     $class_mail_picker_emails = new class_mail_picker_emails();
-                    $subscribe_confirm_url = get_bloginfo('url').'?mail_picker_action=confirm_subscribe&subscriber_id='.$subscriber_id.'&redirect="';
+                    $subscribe_confirm_url = get_bloginfo('url') . '?mail_picker_action=confirm_subscribe&subscriber_id=' . $subscriber_id . '&redirect="';
 
 
-                    $mail_template_data = get_post( $confirmation_mail_template );
+                    $mail_template_data = get_post($confirmation_mail_template);
 
-                    $mail_template_content	= $mail_template_data->post_content;
+                    $mail_template_content    = $mail_template_data->post_content;
 
                     $mail_template_content = do_shortcode($mail_template_content);
                     $mail_template_content = wpautop($mail_template_content);
@@ -223,12 +221,12 @@ function mail_picker_subscriber_source_check_registered_users($post_id){
                     $site_logo_url = wp_get_attachment_url($site_logo_id);
 
                     $vars = array(
-                        '{site_name}'=> esc_html($site_name),
+                        '{site_name}' => esc_html($site_name),
                         '{site_description}' => esc_html($site_description),
                         '{site_url}' => esc_url_raw($site_url),
                         '{site_logo_url}' => esc_url_raw($site_logo_url),
 
-                        '{subscriber_email}' => esc_html($user_email),
+                        '{email}' => esc_html($user_email),
                         '{subscriber_name}' => esc_html($display_name),
 
                         '{subscribe_confirm_url}' => esc_url_raw($subscribe_confirm_url),
@@ -242,7 +240,7 @@ function mail_picker_subscriber_source_check_registered_users($post_id){
 
                     $email_data['mail_to'] =  $user_email;
                     $email_data['mail_bcc'] =  $confirmation_mail_reply_to_email;
-                    $email_data['mail_from'] = $confirmation_mail_from_email ;
+                    $email_data['mail_from'] = $confirmation_mail_from_email;
                     $email_data['mail_from_name'] = $confirmation_mail_from_name;
                     $email_data['reply_to'] = $confirmation_mail_reply_to_email;
                     $email_data['reply_to_name'] = $confirmation_mail_reply_to_name;
@@ -253,60 +251,48 @@ function mail_picker_subscriber_source_check_registered_users($post_id){
 
 
                     $mail_status = $class_mail_picker_emails->send_email($email_data);
-
-
-
                 }
-
-
-
             }
-
         }
 
 
 
-        update_user_meta($user_id, 'subscriber_source_check_'.$post_id, 'done');
-
+        update_user_meta($user_id, 'subscriber_source_check_' . $post_id, 'done');
     }
-
-
-
-
-
 }
 
 
 add_action('mail_picker_subscriber_source_check_comments', 'mail_picker_subscriber_source_check_comments');
 
-function mail_picker_subscriber_source_check_comments($post_id){
+function mail_picker_subscriber_source_check_comments($post_id)
+{
 
     $active_source = get_post_meta($post_id, 'active_source', true);
 
-    $send_confirmation_mail 	= get_post_meta( $post_id, 'send_confirmation_mail', true);
-    $confirmation_mail_template 	= get_post_meta( $post_id, 'confirmation_mail_template', true);
-    $confirmation_mail_subject 	= get_post_meta( $post_id, 'confirmation_mail_subject', true);
-    $confirmation_mail_from_email 	= get_post_meta( $post_id, 'confirmation_mail_from_email', true);
-    $confirmation_mail_from_name 	= get_post_meta( $post_id, 'confirmation_mail_from_name', true);
-    $confirmation_mail_reply_to_email 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_email', true);
-    $confirmation_mail_reply_to_name 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_name', true);
+    $send_confirmation_mail     = get_post_meta($post_id, 'send_confirmation_mail', true);
+    $confirmation_mail_template     = get_post_meta($post_id, 'confirmation_mail_template', true);
+    $confirmation_mail_subject     = get_post_meta($post_id, 'confirmation_mail_subject', true);
+    $confirmation_mail_from_email     = get_post_meta($post_id, 'confirmation_mail_from_email', true);
+    $confirmation_mail_from_name     = get_post_meta($post_id, 'confirmation_mail_from_name', true);
+    $confirmation_mail_reply_to_email     = get_post_meta($post_id, 'confirmation_mail_reply_to_email', true);
+    $confirmation_mail_reply_to_name     = get_post_meta($post_id, 'confirmation_mail_reply_to_name', true);
 
-    $subscriber_status 	= get_post_meta( $post_id, 'subscriber_status', true);
-    $subscriber_status_after_confirm 	= get_post_meta( $post_id, 'subscriber_status_after_confirm', true);
-    $subscriber_list	= get_post_meta( $post_id, 'subscriber_list', true);
+    $subscriber_status     = get_post_meta($post_id, 'subscriber_status', true);
+    $subscriber_status_after_confirm     = get_post_meta($post_id, 'subscriber_status_after_confirm', true);
+    $subscriber_list    = get_post_meta($post_id, 'subscriber_list', true);
 
 
     $meta_query = array();
 
 
     $meta_query[] = array(
-        'key' => 'subscriber_source_check_'.$post_id,
+        'key' => 'subscriber_source_check_' . $post_id,
         'compare' => 'NOT EXISTS',
     );
 
 
     $args = array(
-        'order' 	=> 'DESC',
+        'order'     => 'DESC',
         //'status'	=> 'approve',
         'number' => 1,
         'meta_query' => $meta_query,
@@ -314,16 +300,16 @@ function mail_picker_subscriber_source_check_comments($post_id){
 
     //var_dump($query_args);
     $comments_query = new WP_Comment_Query;
-    $comments = $comments_query->query( $args );
+    $comments = $comments_query->query($args);
 
     //var_dump($comments);
     $gmt_offset = get_option('gmt_offset');
-    $current_datetime = date('Y-m-d H:i:s', strtotime('+'.$gmt_offset.' hour'));
+    $current_datetime = date('Y-m-d H:i:s', strtotime('+' . $gmt_offset . ' hour'));
 
 
 
 
-    foreach( $comments as $comment ) {
+    foreach ($comments as $comment) {
 
         $comment_ID = $comment->comment_ID;
 
@@ -333,7 +319,7 @@ function mail_picker_subscriber_source_check_comments($post_id){
         $author_name = $comment->comment_author;
 
         $formFieldData = array();
-        $formFieldData['subscriber_email'] = $author_email;
+        $formFieldData['email'] = $author_email;
         $formFieldData['first_name'] = $author_name;
         $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -360,9 +346,9 @@ function mail_picker_subscriber_source_check_comments($post_id){
 
 
         // Check for error in the response
-        if (is_wp_error($response)){
+        if (is_wp_error($response)) {
             echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-        }else{
+        } else {
             // data.
 
             $subscriber_data = json_decode(wp_remote_retrieve_body($response));
@@ -376,26 +362,26 @@ function mail_picker_subscriber_source_check_comments($post_id){
             $total_submission = !empty($total_submission) ? $total_submission : 0;
 
             update_post_meta($post_id, 'last_submission_date', $current_datetime);
-            update_post_meta($post_id, 'total_submission',(int) $total_submission + 1);
+            update_post_meta($post_id, 'total_submission', (int) $total_submission + 1);
 
 
-            if($status == 'success'){
-                $subscriber_id = isset($subscriber_data->subscriber_id)? $subscriber_data->subscriber_id : '';
+            if ($status == 'success') {
+                $subscriber_id = isset($subscriber_data->subscriber_id) ? $subscriber_data->subscriber_id : '';
                 $mail_picker_settings = get_option('mail_picker_settings');
                 $site_logo_id = isset($mail_picker_settings['site_logo']) ? $mail_picker_settings['site_logo'] : '';
 
 
-                if($send_confirmation_mail == 'yes'){
+                if ($send_confirmation_mail == 'yes') {
 
 
 
                     $class_mail_picker_emails = new class_mail_picker_emails();
-                    $subscribe_confirm_url = get_bloginfo('url').'?mail_picker_action=confirm_subscribe&subscriber_id='.$subscriber_id.'&redirect=$1"';
+                    $subscribe_confirm_url = get_bloginfo('url') . '?mail_picker_action=confirm_subscribe&subscriber_id=' . $subscriber_id . '&redirect=$1"';
 
 
-                    $mail_template_data = get_post( $confirmation_mail_template );
+                    $mail_template_data = get_post($confirmation_mail_template);
 
-                    $mail_template_content	= $mail_template_data->post_content;
+                    $mail_template_content    = $mail_template_data->post_content;
 
                     $mail_template_content = do_shortcode($mail_template_content);
                     $mail_template_content = wpautop($mail_template_content);
@@ -407,12 +393,12 @@ function mail_picker_subscriber_source_check_comments($post_id){
                     $site_logo_url = wp_get_attachment_url($site_logo_id);
 
                     $vars = array(
-                        '{site_name}'=> esc_html($site_name),
+                        '{site_name}' => esc_html($site_name),
                         '{site_description}' => esc_html($site_description),
                         '{site_url}' => esc_url_raw($site_url),
                         '{site_logo_url}' => esc_url_raw($site_logo_url),
 
-                        '{subscriber_email}' => esc_html($author_email),
+                        '{email}' => esc_html($author_email),
                         '{subscriber_name}' => esc_html($author_name),
 
                         '{subscribe_confirm_url}' => esc_url_raw($subscribe_confirm_url),
@@ -426,7 +412,7 @@ function mail_picker_subscriber_source_check_comments($post_id){
 
                     $email_data['mail_to'] =  $author_email;
                     $email_data['mail_bcc'] =  $confirmation_mail_reply_to_email;
-                    $email_data['mail_from'] = $confirmation_mail_from_email ;
+                    $email_data['mail_from'] = $confirmation_mail_from_email;
                     $email_data['mail_from_name'] = $confirmation_mail_from_name;
                     $email_data['reply_to'] = $confirmation_mail_reply_to_email;
                     $email_data['reply_to_name'] = $confirmation_mail_reply_to_name;
@@ -437,15 +423,8 @@ function mail_picker_subscriber_source_check_comments($post_id){
 
 
                     $mail_status = $class_mail_picker_emails->send_email($email_data);
-
-
-
                 }
-
-
-
             }
-
         }
 
 
@@ -457,50 +436,48 @@ function mail_picker_subscriber_source_check_comments($post_id){
         //var_dump($comment);
 
 
-        update_comment_meta($comment_ID, 'subscriber_source_check_'.$post_id, 'done');
-
-
+        update_comment_meta($comment_ID, 'subscriber_source_check_' . $post_id, 'done');
     }
-
 }
 
 add_action('mail_picker_subscriber_source_check_woo_orders', 'mail_picker_subscriber_source_check_woo_orders');
 
-function mail_picker_subscriber_source_check_woo_orders($post_id){
+function mail_picker_subscriber_source_check_woo_orders($post_id)
+{
 
     $woo_orders = get_post_meta($post_id, 'woo_orders', true);
 
     $order_status = isset($woo_orders['order_status']) ? $woo_orders['order_status'] : 'any';
     $product_ids = isset($woo_orders['product_ids']) ? $woo_orders['product_ids'] : '';
 
-    $subscriber_status 	= get_post_meta( $post_id, 'subscriber_status', true);
-    $subscriber_status_after_confirm 	= get_post_meta( $post_id, 'subscriber_status_after_confirm', true);
-    $subscriber_list	= get_post_meta( $post_id, 'subscriber_list', true);
+    $subscriber_status     = get_post_meta($post_id, 'subscriber_status', true);
+    $subscriber_status_after_confirm     = get_post_meta($post_id, 'subscriber_status_after_confirm', true);
+    $subscriber_list    = get_post_meta($post_id, 'subscriber_list', true);
 
-    $send_confirmation_mail 	= get_post_meta( $post_id, 'send_confirmation_mail', true);
-    $confirmation_mail_template 	= get_post_meta( $post_id, 'confirmation_mail_template', true);
-    $confirmation_mail_subject 	= get_post_meta( $post_id, 'confirmation_mail_subject', true);
-    $confirmation_mail_from_email 	= get_post_meta( $post_id, 'confirmation_mail_from_email', true);
-    $confirmation_mail_from_name 	= get_post_meta( $post_id, 'confirmation_mail_from_name', true);
-    $confirmation_mail_reply_to_email 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_email', true);
-    $confirmation_mail_reply_to_name 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_name', true);
+    $send_confirmation_mail     = get_post_meta($post_id, 'send_confirmation_mail', true);
+    $confirmation_mail_template     = get_post_meta($post_id, 'confirmation_mail_template', true);
+    $confirmation_mail_subject     = get_post_meta($post_id, 'confirmation_mail_subject', true);
+    $confirmation_mail_from_email     = get_post_meta($post_id, 'confirmation_mail_from_email', true);
+    $confirmation_mail_from_name     = get_post_meta($post_id, 'confirmation_mail_from_name', true);
+    $confirmation_mail_reply_to_email     = get_post_meta($post_id, 'confirmation_mail_reply_to_email', true);
+    $confirmation_mail_reply_to_name     = get_post_meta($post_id, 'confirmation_mail_reply_to_name', true);
 
     $posts_per_page = 1;
     $paged = 1;
 
     $gmt_offset = get_option('gmt_offset');
-    $current_datetime = date('Y-m-d H:i:s', strtotime('+'.$gmt_offset.' hour'));
+    $current_datetime = date('Y-m-d H:i:s', strtotime('+' . $gmt_offset . ' hour'));
 
 
     $meta_query[] = array(
-        'key' => 'subscriber_source_check_'.$post_id,
+        'key' => 'subscriber_source_check_' . $post_id,
         'compare' => 'NOT EXISTS',
     );
 
 
 
     $wp_query = new WP_Query(
-        array (
+        array(
             'post_type' => 'shop_order',
             'post_status' => $order_status,
             'orderby' => 'date',
@@ -510,18 +487,19 @@ function mail_picker_subscriber_source_check_woo_orders($post_id){
             'posts_per_page' => $posts_per_page,
             'paged' => $paged,
 
-        ) );
+        )
+    );
 
 
 
 
-    if ( $wp_query->have_posts() ) :
-        while ( $wp_query->have_posts() ) : $wp_query->the_post();
+    if ($wp_query->have_posts()) :
+        while ($wp_query->have_posts()) : $wp_query->the_post();
 
-            $order_id 	= get_the_ID();
-            $license_key 	= get_post_meta( $order_id, 'license_key', true);
+            $order_id     = get_the_ID();
+            $license_key     = get_post_meta($order_id, 'license_key', true);
 
-            $order           = new WC_Order( $order_id );
+            $order           = new WC_Order($order_id);
             $billing_email   = $order->get_billing_email();
             $first_name      = $order->get_billing_first_name();
             $last_name       = $order->get_billing_last_name();
@@ -531,7 +509,7 @@ function mail_picker_subscriber_source_check_woo_orders($post_id){
 
 
             $formFieldData = array();
-            $formFieldData['subscriber_email'] = $billing_email;
+            $formFieldData['email'] = $billing_email;
             $formFieldData['first_name'] = $first_name;
             $formFieldData['last_name'] = $last_name;
             $formFieldData['subscriber_status'] = $subscriber_status;
@@ -559,9 +537,9 @@ function mail_picker_subscriber_source_check_woo_orders($post_id){
 
 
             // Check for error in the response
-            if (is_wp_error($response)){
+            if (is_wp_error($response)) {
                 echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-            }else {
+            } else {
                 // data.
 
                 $subscriber_data = json_decode(wp_remote_retrieve_body($response));
@@ -577,26 +555,26 @@ function mail_picker_subscriber_source_check_woo_orders($post_id){
                 $total_submission = !empty($total_submission) ? $total_submission : 0;
 
                 update_post_meta($post_id, 'last_submission_date', $current_datetime);
-                update_post_meta($post_id, 'total_submission',(int) $total_submission + 1);
+                update_post_meta($post_id, 'total_submission', (int) $total_submission + 1);
 
 
-                if($status == 'success'){
-                    $subscriber_id = isset($subscriber_data->subscriber_id)? $subscriber_data->subscriber_id : '';
+                if ($status == 'success') {
+                    $subscriber_id = isset($subscriber_data->subscriber_id) ? $subscriber_data->subscriber_id : '';
 
 
-                    if($send_confirmation_mail == 'yes'){
+                    if ($send_confirmation_mail == 'yes') {
                         $mail_picker_settings = get_option('mail_picker_settings');
                         $site_logo_id = isset($mail_picker_settings['site_logo']) ? $mail_picker_settings['site_logo'] : '';
 
 
 
                         $class_mail_picker_emails = new class_mail_picker_emails();
-                        $subscribe_confirm_url = get_bloginfo('url').'?mail_picker_action=confirm_subscribe&subscriber_id='.$subscriber_id.'&form_id='.$post_id.'&redirect="';
+                        $subscribe_confirm_url = get_bloginfo('url') . '?mail_picker_action=confirm_subscribe&subscriber_id=' . $subscriber_id . '&form_id=' . $post_id . '&redirect="';
 
 
-                        $mail_template_data = get_post( $confirmation_mail_template );
+                        $mail_template_data = get_post($confirmation_mail_template);
 
-                        $mail_template_content	= $mail_template_data->post_content;
+                        $mail_template_content    = $mail_template_data->post_content;
 
                         $mail_template_content = do_shortcode($mail_template_content);
                         $mail_template_content = wpautop($mail_template_content);
@@ -608,12 +586,12 @@ function mail_picker_subscriber_source_check_woo_orders($post_id){
                         $site_logo_url = wp_get_attachment_url($site_logo_id);
 
                         $vars = array(
-                            '{site_name}'=> esc_html($site_name),
+                            '{site_name}' => esc_html($site_name),
                             '{site_description}' => esc_html($site_description),
                             '{site_url}' => esc_url_raw($site_url),
                             '{site_logo_url}' => esc_url_raw($site_logo_url),
 
-                            '{subscriber_email}' => esc_url_raw($billing_email),
+                            '{email}' => esc_url_raw($billing_email),
                             '{first_name}' => esc_html($first_name),
                             '{last_name}' => esc_html($last_name),
 
@@ -628,7 +606,7 @@ function mail_picker_subscriber_source_check_woo_orders($post_id){
 
                         $email_data['mail_to'] =  $billing_email;
                         $email_data['mail_bcc'] =  $confirmation_mail_reply_to_email;
-                        $email_data['mail_from'] = $confirmation_mail_from_email ;
+                        $email_data['mail_from'] = $confirmation_mail_from_email;
                         $email_data['mail_from_name'] = $confirmation_mail_from_name;
                         $email_data['reply_to'] = $confirmation_mail_reply_to_email;
                         $email_data['reply_to_name'] = $confirmation_mail_reply_to_name;
@@ -639,64 +617,55 @@ function mail_picker_subscriber_source_check_woo_orders($post_id){
 
 
                         $mail_status = $class_mail_picker_emails->send_email($email_data);
-
-
-
                     }
-
-
-
                 }
-
-
-
             }
 
 
-            update_post_meta($order_id, 'subscriber_source_check_'.$post_id, 'done');
+            update_post_meta($order_id, 'subscriber_source_check_' . $post_id, 'done');
 
 
         endwhile;
 
         wp_reset_query();
-    else:
+    else :
 
         echo __('No license found', 'mail-picker');
 
     endif;
-
 }
 
 add_action('mail_picker_subscriber_source_check_evf_entries', 'mail_picker_subscriber_source_check_evf_entries');
 
-function mail_picker_subscriber_source_check_evf_entries($post_id){
+function mail_picker_subscriber_source_check_evf_entries($post_id)
+{
 
-    $subscriber_status 	= get_post_meta( $post_id, 'subscriber_status', true);
-    $subscriber_status_after_confirm 	= get_post_meta( $post_id, 'subscriber_status_after_confirm', true);
-    $subscriber_list	= get_post_meta( $post_id, 'subscriber_list', true);
+    $subscriber_status     = get_post_meta($post_id, 'subscriber_status', true);
+    $subscriber_status_after_confirm     = get_post_meta($post_id, 'subscriber_status_after_confirm', true);
+    $subscriber_list    = get_post_meta($post_id, 'subscriber_list', true);
 
-    $send_confirmation_mail 	= get_post_meta( $post_id, 'send_confirmation_mail', true);
-    $confirmation_mail_template 	= get_post_meta( $post_id, 'confirmation_mail_template', true);
-    $confirmation_mail_subject 	= get_post_meta( $post_id, 'confirmation_mail_subject', true);
-    $confirmation_mail_from_email 	= get_post_meta( $post_id, 'confirmation_mail_from_email', true);
-    $confirmation_mail_from_name 	= get_post_meta( $post_id, 'confirmation_mail_from_name', true);
-    $confirmation_mail_reply_to_email 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_email', true);
-    $confirmation_mail_reply_to_name 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_name', true);
+    $send_confirmation_mail     = get_post_meta($post_id, 'send_confirmation_mail', true);
+    $confirmation_mail_template     = get_post_meta($post_id, 'confirmation_mail_template', true);
+    $confirmation_mail_subject     = get_post_meta($post_id, 'confirmation_mail_subject', true);
+    $confirmation_mail_from_email     = get_post_meta($post_id, 'confirmation_mail_from_email', true);
+    $confirmation_mail_from_name     = get_post_meta($post_id, 'confirmation_mail_from_name', true);
+    $confirmation_mail_reply_to_email     = get_post_meta($post_id, 'confirmation_mail_reply_to_email', true);
+    $confirmation_mail_reply_to_name     = get_post_meta($post_id, 'confirmation_mail_reply_to_name', true);
 
     $posts_per_page = 1;
     $paged = 1;
 
     $gmt_offset = get_option('gmt_offset');
-    $current_datetime = date('Y-m-d H:i:s', strtotime('+'.$gmt_offset.' hour'));
+    $current_datetime = date('Y-m-d H:i:s', strtotime('+' . $gmt_offset . ' hour'));
 
 
     $meta_query[] = array(
-        'key' => 'subscriber_source_check_'.$post_id,
+        'key' => 'subscriber_source_check_' . $post_id,
         'compare' => 'NOT EXISTS',
     );
 
     $wp_query = new WP_Query(
-        array (
+        array(
             'post_type' => 'everest_form',
             'post_status' => 'any',
             'orderby' => 'date',
@@ -706,18 +675,19 @@ function mail_picker_subscriber_source_check_evf_entries($post_id){
             'posts_per_page' => $posts_per_page,
             'paged' => $paged,
 
-        ) );
+        )
+    );
 
 
 
 
-    if ( $wp_query->have_posts() ) :
-        while ( $wp_query->have_posts() ) : $wp_query->the_post();
+    if ($wp_query->have_posts()) :
+        while ($wp_query->have_posts()) : $wp_query->the_post();
 
-            $order_id 	= get_the_ID();
-            $license_key 	= get_post_meta( $order_id, 'license_key', true);
+            $order_id     = get_the_ID();
+            $license_key     = get_post_meta($order_id, 'license_key', true);
 
-            $order           = new WC_Order( $order_id );
+            $order           = new WC_Order($order_id);
             $billing_email   = $order->get_billing_email();
             $first_name      = $order->get_billing_first_name();
             $last_name       = $order->get_billing_last_name();
@@ -727,7 +697,7 @@ function mail_picker_subscriber_source_check_evf_entries($post_id){
 
 
             $formFieldData = array();
-            $formFieldData['subscriber_email'] = $billing_email;
+            $formFieldData['email'] = $billing_email;
             $formFieldData['first_name'] = $first_name;
             $formFieldData['last_name'] = $last_name;
             $formFieldData['subscriber_status'] = $subscriber_status;
@@ -754,9 +724,9 @@ function mail_picker_subscriber_source_check_evf_entries($post_id){
 
 
             // Check for error in the response
-            if (is_wp_error($response)){
+            if (is_wp_error($response)) {
                 echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-            }else {
+            } else {
                 // data.
 
                 $subscriber_data = json_decode(wp_remote_retrieve_body($response));
@@ -772,26 +742,26 @@ function mail_picker_subscriber_source_check_evf_entries($post_id){
                 $total_submission = !empty($total_submission) ? $total_submission : 0;
 
                 update_post_meta($post_id, 'last_submission_date', $current_datetime);
-                update_post_meta($post_id, 'total_submission',(int) $total_submission + 1);
+                update_post_meta($post_id, 'total_submission', (int) $total_submission + 1);
 
 
-                if($status == 'success'){
-                    $subscriber_id = isset($subscriber_data->subscriber_id)? $subscriber_data->subscriber_id : '';
+                if ($status == 'success') {
+                    $subscriber_id = isset($subscriber_data->subscriber_id) ? $subscriber_data->subscriber_id : '';
 
 
-                    if($send_confirmation_mail == 'yes'){
+                    if ($send_confirmation_mail == 'yes') {
                         $mail_picker_settings = get_option('mail_picker_settings');
                         $site_logo_id = isset($mail_picker_settings['site_logo']) ? $mail_picker_settings['site_logo'] : '';
 
 
 
                         $class_mail_picker_emails = new class_mail_picker_emails();
-                        $subscribe_confirm_url = get_bloginfo('url').'?mail_picker_action=confirm_subscribe&subscriber_id='.$subscriber_id.'&form_id='.$post_id.'&redirect="';
+                        $subscribe_confirm_url = get_bloginfo('url') . '?mail_picker_action=confirm_subscribe&subscriber_id=' . $subscriber_id . '&form_id=' . $post_id . '&redirect="';
 
 
-                        $mail_template_data = get_post( $confirmation_mail_template );
+                        $mail_template_data = get_post($confirmation_mail_template);
 
-                        $mail_template_content	= $mail_template_data->post_content;
+                        $mail_template_content    = $mail_template_data->post_content;
 
                         $mail_template_content = do_shortcode($mail_template_content);
                         $mail_template_content = wpautop($mail_template_content);
@@ -803,12 +773,12 @@ function mail_picker_subscriber_source_check_evf_entries($post_id){
                         $site_logo_url = wp_get_attachment_url($site_logo_id);
 
                         $vars = array(
-                            '{site_name}'=> $site_name,
+                            '{site_name}' => $site_name,
                             '{site_description}' => esc_html($site_description),
                             '{site_url}' => esc_url_raw($site_url),
                             '{site_logo_url}' => esc_url_raw($site_logo_url),
 
-                            '{subscriber_email}' => esc_html($billing_email),
+                            '{email}' => esc_html($billing_email),
                             '{first_name}' => esc_html($first_name),
                             '{last_name}' => esc_html($last_name),
 
@@ -823,7 +793,7 @@ function mail_picker_subscriber_source_check_evf_entries($post_id){
 
                         $email_data['mail_to'] =  $billing_email;
                         $email_data['mail_bcc'] =  $confirmation_mail_reply_to_email;
-                        $email_data['mail_from'] = $confirmation_mail_from_email ;
+                        $email_data['mail_from'] = $confirmation_mail_from_email;
                         $email_data['mail_from_name'] = $confirmation_mail_from_name;
                         $email_data['reply_to'] = $confirmation_mail_reply_to_email;
                         $email_data['reply_to_name'] = $confirmation_mail_reply_to_name;
@@ -834,64 +804,55 @@ function mail_picker_subscriber_source_check_evf_entries($post_id){
 
 
                         $mail_status = $class_mail_picker_emails->send_email($email_data);
-
-
-
                     }
-
-
-
                 }
-
-
-
             }
 
 
-            update_post_meta($order_id, 'subscriber_source_check_'.$post_id, 'done');
+            update_post_meta($order_id, 'subscriber_source_check_' . $post_id, 'done');
 
 
         endwhile;
 
         wp_reset_query();
-    else:
+    else :
 
         echo __('No license found', 'mail-picker');
 
     endif;
-
 }
 
 add_action('mail_picker_subscriber_source_check_flamingo_inbound', 'mail_picker_subscriber_source_check_flamingo_inbound');
 
-function mail_picker_subscriber_source_check_flamingo_inbound($post_id){
+function mail_picker_subscriber_source_check_flamingo_inbound($post_id)
+{
 
-    $subscriber_status 	= get_post_meta( $post_id, 'subscriber_status', true);
-    $subscriber_status_after_confirm 	= get_post_meta( $post_id, 'subscriber_status_after_confirm', true);
-    $subscriber_list	= get_post_meta( $post_id, 'subscriber_list', true);
+    $subscriber_status     = get_post_meta($post_id, 'subscriber_status', true);
+    $subscriber_status_after_confirm     = get_post_meta($post_id, 'subscriber_status_after_confirm', true);
+    $subscriber_list    = get_post_meta($post_id, 'subscriber_list', true);
 
-    $send_confirmation_mail 	= get_post_meta( $post_id, 'send_confirmation_mail', true);
-    $confirmation_mail_template 	= get_post_meta( $post_id, 'confirmation_mail_template', true);
-    $confirmation_mail_subject 	= get_post_meta( $post_id, 'confirmation_mail_subject', true);
-    $confirmation_mail_from_email 	= get_post_meta( $post_id, 'confirmation_mail_from_email', true);
-    $confirmation_mail_from_name 	= get_post_meta( $post_id, 'confirmation_mail_from_name', true);
-    $confirmation_mail_reply_to_email 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_email', true);
-    $confirmation_mail_reply_to_name 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_name', true);
+    $send_confirmation_mail     = get_post_meta($post_id, 'send_confirmation_mail', true);
+    $confirmation_mail_template     = get_post_meta($post_id, 'confirmation_mail_template', true);
+    $confirmation_mail_subject     = get_post_meta($post_id, 'confirmation_mail_subject', true);
+    $confirmation_mail_from_email     = get_post_meta($post_id, 'confirmation_mail_from_email', true);
+    $confirmation_mail_from_name     = get_post_meta($post_id, 'confirmation_mail_from_name', true);
+    $confirmation_mail_reply_to_email     = get_post_meta($post_id, 'confirmation_mail_reply_to_email', true);
+    $confirmation_mail_reply_to_name     = get_post_meta($post_id, 'confirmation_mail_reply_to_name', true);
 
     $posts_per_page = 1;
     $paged = 1;
 
     $gmt_offset = get_option('gmt_offset');
-    $current_datetime = date('Y-m-d H:i:s', strtotime('+'.$gmt_offset.' hour'));
+    $current_datetime = date('Y-m-d H:i:s', strtotime('+' . $gmt_offset . ' hour'));
 
 
     $meta_query[] = array(
-        'key' => 'subscriber_source_check_'.$post_id,
+        'key' => 'subscriber_source_check_' . $post_id,
         'compare' => 'NOT EXISTS',
     );
 
     $wp_query = new WP_Query(
-        array (
+        array(
             'post_type' => 'flamingo_inbound',
             'post_status' => 'any',
             'orderby' => 'date',
@@ -901,24 +862,25 @@ function mail_picker_subscriber_source_check_flamingo_inbound($post_id){
             'posts_per_page' => $posts_per_page,
             'paged' => $paged,
 
-        ) );
+        )
+    );
 
 
 
 
-    if ( $wp_query->have_posts() ) :
-        while ( $wp_query->have_posts() ) : $wp_query->the_post();
+    if ($wp_query->have_posts()) :
+        while ($wp_query->have_posts()) : $wp_query->the_post();
 
-            $order_id 	= get_the_ID();
-            $_from_email = get_post_meta( $order_id, '_from_email', true);
-            $_from_name = get_post_meta( $order_id, '_from_name', true);
+            $order_id     = get_the_ID();
+            $_from_email = get_post_meta($order_id, '_from_email', true);
+            $_from_name = get_post_meta($order_id, '_from_name', true);
 
 
 
 
 
             $formFieldData = array();
-            $formFieldData['subscriber_email'] = $_from_email;
+            $formFieldData['email'] = $_from_email;
             $formFieldData['first_name'] = ($_from_name);
             $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -929,7 +891,7 @@ function mail_picker_subscriber_source_check_flamingo_inbound($post_id){
             // API query parameters
             $api_params = array(
                 'mail_picker_action' => 'add_subscriber',
-                'formFieldData' =>$formFieldData,
+                'formFieldData' => $formFieldData,
                 'subscriber_list' => $subscriber_list,
             );
 
@@ -944,9 +906,9 @@ function mail_picker_subscriber_source_check_flamingo_inbound($post_id){
 
 
             // Check for error in the response
-            if (is_wp_error($response)){
+            if (is_wp_error($response)) {
                 echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-            }else {
+            } else {
                 // data.
 
                 $subscriber_data = json_decode(wp_remote_retrieve_body($response));
@@ -962,26 +924,26 @@ function mail_picker_subscriber_source_check_flamingo_inbound($post_id){
                 $total_submission = !empty($total_submission) ? $total_submission : 0;
 
                 update_post_meta($post_id, 'last_submission_date', $current_datetime);
-                update_post_meta($post_id, 'total_submission',(int) $total_submission + 1);
+                update_post_meta($post_id, 'total_submission', (int) $total_submission + 1);
 
 
-                if($status == 'success'){
-                    $subscriber_id = isset($subscriber_data->subscriber_id)? $subscriber_data->subscriber_id : '';
+                if ($status == 'success') {
+                    $subscriber_id = isset($subscriber_data->subscriber_id) ? $subscriber_data->subscriber_id : '';
 
 
-                    if($send_confirmation_mail == 'yes'){
+                    if ($send_confirmation_mail == 'yes') {
                         $mail_picker_settings = get_option('mail_picker_settings');
                         $site_logo_id = isset($mail_picker_settings['site_logo']) ? $mail_picker_settings['site_logo'] : '';
 
 
 
                         $class_mail_picker_emails = new class_mail_picker_emails();
-                        $subscribe_confirm_url = get_bloginfo('url').'?mail_picker_action=confirm_subscribe&subscriber_id='.$subscriber_id.'&form_id='.$post_id.'&redirect="';
+                        $subscribe_confirm_url = get_bloginfo('url') . '?mail_picker_action=confirm_subscribe&subscriber_id=' . $subscriber_id . '&form_id=' . $post_id . '&redirect="';
 
 
-                        $mail_template_data = get_post( $confirmation_mail_template );
+                        $mail_template_data = get_post($confirmation_mail_template);
 
-                        $mail_template_content	= $mail_template_data->post_content;
+                        $mail_template_content    = $mail_template_data->post_content;
 
                         $mail_template_content = do_shortcode($mail_template_content);
                         $mail_template_content = wpautop($mail_template_content);
@@ -993,12 +955,12 @@ function mail_picker_subscriber_source_check_flamingo_inbound($post_id){
                         $site_logo_url = wp_get_attachment_url($site_logo_id);
 
                         $vars = array(
-                            '{site_name}'=> esc_html($site_name),
+                            '{site_name}' => esc_html($site_name),
                             '{site_description}' => esc_html($site_description),
                             '{site_url}' => esc_url_raw($site_url),
                             '{site_logo_url}' => esc_url_raw($site_logo_url),
 
-                            '{subscriber_email}' => esc_html($_from_email),
+                            '{email}' => esc_html($_from_email),
                             '{first_name}' => esc_html($_from_name),
 
                             '{subscribe_confirm_url}' => esc_url_raw($subscribe_confirm_url),
@@ -1012,7 +974,7 @@ function mail_picker_subscriber_source_check_flamingo_inbound($post_id){
 
                         $email_data['mail_to'] =  $_from_email;
                         $email_data['mail_bcc'] =  $confirmation_mail_reply_to_email;
-                        $email_data['mail_from'] = $confirmation_mail_from_email ;
+                        $email_data['mail_from'] = $confirmation_mail_from_email;
                         $email_data['mail_from_name'] = $confirmation_mail_from_name;
                         $email_data['reply_to'] = $confirmation_mail_reply_to_email;
                         $email_data['reply_to_name'] = $confirmation_mail_reply_to_name;
@@ -1023,65 +985,56 @@ function mail_picker_subscriber_source_check_flamingo_inbound($post_id){
 
 
                         $mail_status = $class_mail_picker_emails->send_email($email_data);
-
-
-
                     }
-
-
-
                 }
-
-
-
             }
 
 
-            update_post_meta($order_id, 'subscriber_source_check_'.$post_id, 'done');
+            update_post_meta($order_id, 'subscriber_source_check_' . $post_id, 'done');
 
 
         endwhile;
 
         wp_reset_query();
-    else:
+    else :
 
         echo __('No license found', 'mail-picker');
 
     endif;
-
 }
 
 
 add_action('mail_picker_subscriber_source_check_ninjaform_sub', 'mail_picker_subscriber_source_check_ninjaform_sub');
 
-function mail_picker_subscriber_source_check_ninjaform_sub($post_id){
+function mail_picker_subscriber_source_check_ninjaform_sub($post_id)
+{
 
-    $subscriber_status 	= get_post_meta( $post_id, 'subscriber_status', true);
-    $subscriber_status_after_confirm 	= get_post_meta( $post_id, 'subscriber_status_after_confirm', true);
-    $subscriber_list	= get_post_meta( $post_id, 'subscriber_list', true);
+    $subscriber_status     = get_post_meta($post_id, 'subscriber_status', true);
+    $subscriber_status_after_confirm     = get_post_meta($post_id, 'subscriber_status_after_confirm', true);
+    $subscriber_list    = get_post_meta($post_id, 'subscriber_list', true);
 
-    $send_confirmation_mail 	= get_post_meta( $post_id, 'send_confirmation_mail', true);
-    $confirmation_mail_template 	= get_post_meta( $post_id, 'confirmation_mail_template', true);
-    $confirmation_mail_subject 	= get_post_meta( $post_id, 'confirmation_mail_subject', true);
-    $confirmation_mail_from_email 	= get_post_meta( $post_id, 'confirmation_mail_from_email', true);
-    $confirmation_mail_from_name 	= get_post_meta( $post_id, 'confirmation_mail_from_name', true);
-    $confirmation_mail_reply_to_email 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_email', true);
-    $confirmation_mail_reply_to_name 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_name', true);
+    $send_confirmation_mail     = get_post_meta($post_id, 'send_confirmation_mail', true);
+    $confirmation_mail_template     = get_post_meta($post_id, 'confirmation_mail_template', true);
+    $confirmation_mail_subject     = get_post_meta($post_id, 'confirmation_mail_subject', true);
+    $confirmation_mail_from_email     = get_post_meta($post_id, 'confirmation_mail_from_email', true);
+    $confirmation_mail_from_name     = get_post_meta($post_id, 'confirmation_mail_from_name', true);
+    $confirmation_mail_reply_to_email     = get_post_meta($post_id, 'confirmation_mail_reply_to_email', true);
+    $confirmation_mail_reply_to_name     = get_post_meta($post_id, 'confirmation_mail_reply_to_name', true);
 
     $posts_per_page = 1;
     $paged = 1;
 
     $gmt_offset = get_option('gmt_offset');
-    $current_datetime = date('Y-m-d H:i:s', strtotime('+'.$gmt_offset.' hour'));
+    $current_datetime = date('Y-m-d H:i:s', strtotime('+' . $gmt_offset . ' hour'));
 
 
     $meta_query[] = array(
-        'key' => 'subscriber_source_check_'.$post_id,
+        'key' => 'subscriber_source_check_' . $post_id,
         'compare' => 'NOT EXISTS',
     );
 
     $wp_query = new WP_Query(
-        array (
+        array(
             'post_type' => 'nf_sub',
             'post_status' => 'any',
             'orderby' => 'date',
@@ -1091,48 +1044,49 @@ function mail_picker_subscriber_source_check_ninjaform_sub($post_id){
             'posts_per_page' => $posts_per_page,
             'paged' => $paged,
 
-        ) );
+        )
+    );
 
 
 
 
-    if ( $wp_query->have_posts() ) :
-        while ( $wp_query->have_posts() ) : $wp_query->the_post();
+    if ($wp_query->have_posts()) :
+        while ($wp_query->have_posts()) : $wp_query->the_post();
 
-            $order_id 	= get_the_ID();
+            $order_id     = get_the_ID();
 
 
-            $form_id = get_post_meta( $order_id, '_form_id', TRUE );
-            $ninjaform_sub = get_post_meta( $order_id, 'ninjaform_sub', TRUE );
+            $form_id = get_post_meta($order_id, '_form_id', TRUE);
+            $ninjaform_sub = get_post_meta($order_id, 'ninjaform_sub', TRUE);
             $ninjaform_sub = !empty($ninjaform_sub) ? $ninjaform_sub : array();
             $email_label = isset($ninjaform_sub['email_label']) ? $ninjaform_sub['email_label'] : 'Email';
 
-            $sub = Ninja_Forms()->form()->get_sub( $order_id );
+            $sub = Ninja_Forms()->form()->get_sub($order_id);
 
-            $fields = Ninja_Forms()->form( $form_id )->get_fields();
-            $hidden_field_types = apply_filters( 'nf_sub_hidden_field_types', array() );
+            $fields = Ninja_Forms()->form($form_id)->get_fields();
+            $hidden_field_types = apply_filters('nf_sub_hidden_field_types', array());
 
 
-            $subscriber_email = '';
+            $email = '';
 
 ?>
             <?php
-            foreach( $fields as $field ):
+            foreach ($fields as $field) :
 
-                if( in_array( $field->get_setting( 'type' ), $hidden_field_types ) ) continue;
+                if (in_array($field->get_setting('type'), $hidden_field_types)) continue;
 
-                if( ! isset( Ninja_Forms()->fields[ $field->get_setting( 'type' ) ] ) ) continue;
+                if (!isset(Ninja_Forms()->fields[$field->get_setting('type')])) continue;
 
-                $field_class = Ninja_Forms()->fields[ $field->get_setting( 'type' ) ];
+                $field_class = Ninja_Forms()->fields[$field->get_setting('type')];
 
-                if( ! $field_class ) continue;
+                if (!$field_class) continue;
 
 
-                $admin_label = ( $field->get_setting( 'admin_label' ) ) ? $field->get_setting( 'admin_label' ) : $field->get_setting( 'label' ) ;
-                $field_value = $sub->get_field_value( $field->get_id() );
+                $admin_label = ($field->get_setting('admin_label')) ? $field->get_setting('admin_label') : $field->get_setting('label');
+                $field_value = $sub->get_field_value($field->get_id());
 
-                if($email_label == $admin_label){
-                    $subscriber_email = $field_value;
+                if ($email_label == $admin_label) {
+                    $email = $field_value;
                 }
 
 
@@ -1141,12 +1095,12 @@ function mail_picker_subscriber_source_check_ninjaform_sub($post_id){
 
 
 
-        if(empty($subscriber_email)) return;
+            if (empty($email)) return;
 
 
 
             $formFieldData = array();
-            $formFieldData['subscriber_email'] = $subscriber_email;
+            $formFieldData['email'] = $email;
             $formFieldData['subscriber_status'] = $subscriber_status;
 
 
@@ -1171,9 +1125,9 @@ function mail_picker_subscriber_source_check_ninjaform_sub($post_id){
 
 
             // Check for error in the response
-            if (is_wp_error($response)){
+            if (is_wp_error($response)) {
                 echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-            }else {
+            } else {
                 // data.
 
                 $subscriber_data = json_decode(wp_remote_retrieve_body($response));
@@ -1189,26 +1143,26 @@ function mail_picker_subscriber_source_check_ninjaform_sub($post_id){
                 $total_submission = !empty($total_submission) ? $total_submission : 0;
 
                 update_post_meta($post_id, 'last_submission_date', $current_datetime);
-                update_post_meta($post_id, 'total_submission',(int) $total_submission + 1);
+                update_post_meta($post_id, 'total_submission', (int) $total_submission + 1);
 
 
-                if($status == 'success'){
-                    $subscriber_id = isset($subscriber_data->subscriber_id)? $subscriber_data->subscriber_id : '';
+                if ($status == 'success') {
+                    $subscriber_id = isset($subscriber_data->subscriber_id) ? $subscriber_data->subscriber_id : '';
 
 
-                    if($send_confirmation_mail == 'yes'){
+                    if ($send_confirmation_mail == 'yes') {
                         $mail_picker_settings = get_option('mail_picker_settings');
                         $site_logo_id = isset($mail_picker_settings['site_logo']) ? $mail_picker_settings['site_logo'] : '';
 
 
 
                         $class_mail_picker_emails = new class_mail_picker_emails();
-                        $subscribe_confirm_url = get_bloginfo('url').'?mail_picker_action=confirm_subscribe&subscriber_id='.$subscriber_id.'&form_id='.$post_id.'&redirect="';
+                        $subscribe_confirm_url = get_bloginfo('url') . '?mail_picker_action=confirm_subscribe&subscriber_id=' . $subscriber_id . '&form_id=' . $post_id . '&redirect="';
 
 
-                        $mail_template_data = get_post( $confirmation_mail_template );
+                        $mail_template_data = get_post($confirmation_mail_template);
 
-                        $mail_template_content	= $mail_template_data->post_content;
+                        $mail_template_content    = $mail_template_data->post_content;
 
                         $mail_template_content = do_shortcode($mail_template_content);
                         $mail_template_content = wpautop($mail_template_content);
@@ -1220,13 +1174,13 @@ function mail_picker_subscriber_source_check_ninjaform_sub($post_id){
                         $site_logo_url = wp_get_attachment_url($site_logo_id);
 
                         $vars = array(
-                            '{site_name}'=> esc_html($site_name),
+                            '{site_name}' => esc_html($site_name),
                             '{site_description}' => esc_html($site_description),
                             '{site_url}' => esc_url_raw($site_url),
                             '{site_logo_url}' => esc_url_raw($site_logo_url),
 
-                            '{subscriber_email}' => esc_html($subscriber_email),
-//                            '{first_name}' => $_from_name,
+                            '{email}' => esc_html($email),
+                            //                            '{first_name}' => $_from_name,
 
                             '{subscribe_confirm_url}' => esc_url_raw($subscribe_confirm_url),
 
@@ -1237,9 +1191,9 @@ function mail_picker_subscriber_source_check_ninjaform_sub($post_id){
                         $vars = apply_filters('mail_picker_mail_vars', $vars);
 
 
-                        $email_data['mail_to'] =  $subscriber_email;
+                        $email_data['mail_to'] =  $email;
                         $email_data['mail_bcc'] =  $confirmation_mail_reply_to_email;
-                        $email_data['mail_from'] = $confirmation_mail_from_email ;
+                        $email_data['mail_from'] = $confirmation_mail_from_email;
                         $email_data['mail_from_name'] = $confirmation_mail_from_name;
                         $email_data['reply_to'] = $confirmation_mail_reply_to_email;
                         $email_data['reply_to_name'] = $confirmation_mail_reply_to_name;
@@ -1250,32 +1204,22 @@ function mail_picker_subscriber_source_check_ninjaform_sub($post_id){
 
 
                         $mail_status = $class_mail_picker_emails->send_email($email_data);
-
-
-
                     }
-
-
-
                 }
-
-
-
             }
 
 
-            //update_post_meta($order_id, 'subscriber_source_check_'.$post_id, 'done');
+        //update_post_meta($order_id, 'subscriber_source_check_'.$post_id, 'done');
 
 
         endwhile;
 
         wp_reset_query();
-    else:
+    else :
 
         echo __('No license found', 'mail-picker');
 
     endif;
-
 }
 
 
@@ -1285,29 +1229,30 @@ add_shortcode('mail_picker_subscriber_source_check_newsletter_subscribers', 'mai
 
 add_action('mail_picker_subscriber_source_check_newsletter_subscribers', 'mail_picker_subscriber_source_check_newsletter_subscribers');
 
-function mail_picker_subscriber_source_check_newsletter_subscribers($post_id){
+function mail_picker_subscriber_source_check_newsletter_subscribers($post_id)
+{
 
-    $subscriber_status 	= get_post_meta( $post_id, 'subscriber_status', true);
-    $subscriber_status_after_confirm 	= get_post_meta( $post_id, 'subscriber_status_after_confirm', true);
-    $subscriber_list	= get_post_meta( $post_id, 'subscriber_list', true);
+    $subscriber_status     = get_post_meta($post_id, 'subscriber_status', true);
+    $subscriber_status_after_confirm     = get_post_meta($post_id, 'subscriber_status_after_confirm', true);
+    $subscriber_list    = get_post_meta($post_id, 'subscriber_list', true);
 
-    $send_confirmation_mail 	= get_post_meta( $post_id, 'send_confirmation_mail', true);
-    $confirmation_mail_template 	= get_post_meta( $post_id, 'confirmation_mail_template', true);
-    $confirmation_mail_subject 	= get_post_meta( $post_id, 'confirmation_mail_subject', true);
-    $confirmation_mail_from_email 	= get_post_meta( $post_id, 'confirmation_mail_from_email', true);
-    $confirmation_mail_from_name 	= get_post_meta( $post_id, 'confirmation_mail_from_name', true);
-    $confirmation_mail_reply_to_email 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_email', true);
-    $confirmation_mail_reply_to_name 	= get_post_meta( $post_id, 'confirmation_mail_reply_to_name', true);
+    $send_confirmation_mail     = get_post_meta($post_id, 'send_confirmation_mail', true);
+    $confirmation_mail_template     = get_post_meta($post_id, 'confirmation_mail_template', true);
+    $confirmation_mail_subject     = get_post_meta($post_id, 'confirmation_mail_subject', true);
+    $confirmation_mail_from_email     = get_post_meta($post_id, 'confirmation_mail_from_email', true);
+    $confirmation_mail_from_name     = get_post_meta($post_id, 'confirmation_mail_from_name', true);
+    $confirmation_mail_reply_to_email     = get_post_meta($post_id, 'confirmation_mail_reply_to_email', true);
+    $confirmation_mail_reply_to_name     = get_post_meta($post_id, 'confirmation_mail_reply_to_name', true);
 
     $posts_per_page = 1;
     $paged = 1;
 
     $gmt_offset = get_option('gmt_offset');
-    $current_datetime = date('Y-m-d H:i:s', strtotime('+'.$gmt_offset.' hour'));
+    $current_datetime = date('Y-m-d H:i:s', strtotime('+' . $gmt_offset . ' hour'));
 
     global $wpdb;
     $profile_18 = 'done';
-    $status= 'C';
+    $status = 'C';
 
     //$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->wp_newsletter WHERE status = %s AND
     // profile_18 = %s", $profile_18, $status ) );
@@ -1316,12 +1261,12 @@ function mail_picker_subscriber_source_check_newsletter_subscribers($post_id){
 
     //var_dump($results);
 
-    if(empty($subscriber_email)) return;
+    if (empty($email)) return;
 
 
 
     $formFieldData = array();
-    $formFieldData['subscriber_email'] = $subscriber_email;
+    $formFieldData['email'] = $email;
     $formFieldData['subscriber_status'] = $subscriber_status;
 
     $formFieldData = mail_picker_recursive_sanitize_arr($formFieldData);
@@ -1345,9 +1290,9 @@ function mail_picker_subscriber_source_check_newsletter_subscribers($post_id){
 
 
     // Check for error in the response
-    if (is_wp_error($response)){
+    if (is_wp_error($response)) {
         echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-    }else {
+    } else {
         // data.
 
         $subscriber_data = json_decode(wp_remote_retrieve_body($response));
@@ -1363,26 +1308,26 @@ function mail_picker_subscriber_source_check_newsletter_subscribers($post_id){
         $total_submission = !empty($total_submission) ? $total_submission : 0;
 
         update_post_meta($post_id, 'last_submission_date', $current_datetime);
-        update_post_meta($post_id, 'total_submission',(int) $total_submission + 1);
+        update_post_meta($post_id, 'total_submission', (int) $total_submission + 1);
 
 
-        if($status == 'success'){
-            $subscriber_id = isset($subscriber_data->subscriber_id)? $subscriber_data->subscriber_id : '';
+        if ($status == 'success') {
+            $subscriber_id = isset($subscriber_data->subscriber_id) ? $subscriber_data->subscriber_id : '';
 
 
-            if($send_confirmation_mail == 'yes'){
+            if ($send_confirmation_mail == 'yes') {
                 $mail_picker_settings = get_option('mail_picker_settings');
                 $site_logo_id = isset($mail_picker_settings['site_logo']) ? $mail_picker_settings['site_logo'] : '';
 
 
 
                 $class_mail_picker_emails = new class_mail_picker_emails();
-                $subscribe_confirm_url = get_bloginfo('url').'?mail_picker_action=confirm_subscribe&subscriber_id='.$subscriber_id.'&form_id='.$post_id.'&redirect="';
+                $subscribe_confirm_url = get_bloginfo('url') . '?mail_picker_action=confirm_subscribe&subscriber_id=' . $subscriber_id . '&form_id=' . $post_id . '&redirect="';
 
 
-                $mail_template_data = get_post( $confirmation_mail_template );
+                $mail_template_data = get_post($confirmation_mail_template);
 
-                $mail_template_content	= $mail_template_data->post_content;
+                $mail_template_content    = $mail_template_data->post_content;
 
                 $mail_template_content = do_shortcode($mail_template_content);
                 $mail_template_content = wpautop($mail_template_content);
@@ -1394,13 +1339,13 @@ function mail_picker_subscriber_source_check_newsletter_subscribers($post_id){
                 $site_logo_url = wp_get_attachment_url($site_logo_id);
 
                 $vars = array(
-                    '{site_name}'=> esc_html($site_name),
-                    '{site_description}' =>esc_html( $site_description),
+                    '{site_name}' => esc_html($site_name),
+                    '{site_description}' => esc_html($site_description),
                     '{site_url}' => esc_url_raw($site_url),
                     '{site_logo_url}' => esc_url_raw($site_logo_url),
 
-                    '{subscriber_email}' => esc_html($subscriber_email),
-//                            '{first_name}' => $_from_name,
+                    '{email}' => esc_html($email),
+                    //                            '{first_name}' => $_from_name,
 
                     '{subscribe_confirm_url}' => esc_url_raw($subscribe_confirm_url),
 
@@ -1411,9 +1356,9 @@ function mail_picker_subscriber_source_check_newsletter_subscribers($post_id){
                 $vars = apply_filters('mail_picker_mail_vars', $vars);
 
 
-                $email_data['mail_to'] =  $subscriber_email;
+                $email_data['mail_to'] =  $email;
                 $email_data['mail_bcc'] =  $confirmation_mail_reply_to_email;
-                $email_data['mail_from'] = $confirmation_mail_from_email ;
+                $email_data['mail_from'] = $confirmation_mail_from_email;
                 $email_data['mail_from_name'] = $confirmation_mail_from_name;
                 $email_data['reply_to'] = $confirmation_mail_reply_to_email;
                 $email_data['reply_to_name'] = $confirmation_mail_reply_to_name;
@@ -1424,17 +1369,8 @@ function mail_picker_subscriber_source_check_newsletter_subscribers($post_id){
 
 
                 $mail_status = $class_mail_picker_emails->send_email($email_data);
-
-
-
             }
-
-
-
         }
-
-
-
     }
 
 
@@ -1452,8 +1388,9 @@ function mail_picker_subscriber_source_check_newsletter_subscribers($post_id){
 
 
 
-if( ! function_exists( 'mail_picker_wpcf7_submit' ) ) {
-    function mail_picker_wpcf7_submit( $contact_form ) {
+if (!function_exists('mail_picker_wpcf7_submit')) {
+    function mail_picker_wpcf7_submit($contact_form)
+    {
 
         $mail_picker_settings = get_option('mail_picker_settings');
         $subscriber_source = isset($mail_picker_settings['subscriber_source']) ? $mail_picker_settings['subscriber_source'] : array();
@@ -1461,11 +1398,11 @@ if( ! function_exists( 'mail_picker_wpcf7_submit' ) ) {
 
         $enable = isset($cf7['enable']) ? $cf7['enable'] : 'no';
 
-        if($enable != 'yes') return;
+        if ($enable != 'yes') return;
 
         $contact_form_id    = isset($_POST['_wpcf7']) ? sanitize_text_field($_POST['_wpcf7']) : '';
 
-        if( $contact_form_id != $contact_form->id() ) return;
+        if ($contact_form_id != $contact_form->id()) return;
 
         $email_field_attr = (isset($cf7['email_field_attr']) && !empty($cf7['email_field_attr'])) ? $cf7['email_field_attr'] : 'your-email';
         $name_field_attr = (isset($cf7['name_field_attr']) && !empty($cf7['name_field_attr'])) ? $cf7['name_field_attr'] : 'your-name';
@@ -1477,7 +1414,7 @@ if( ! function_exists( 'mail_picker_wpcf7_submit' ) ) {
         $name_value = isset($_POST[$name_field_attr]) ? sanitize_text_field($_POST[$name_field_attr]) : '';
 
         $formFieldData = array();
-        $formFieldData['subscriber_email'] = $email_value;
+        $formFieldData['email'] = $email_value;
         $formFieldData['first_name'] = $name_value;
         $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -1504,9 +1441,9 @@ if( ! function_exists( 'mail_picker_wpcf7_submit' ) ) {
 
 
         // Check for error in the response
-        if (is_wp_error($response)){
+        if (is_wp_error($response)) {
             echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-        }else{
+        } else {
             // data.
             $subscriber_data = json_decode(wp_remote_retrieve_body($response));
 
@@ -1533,43 +1470,44 @@ if( ! function_exists( 'mail_picker_wpcf7_submit' ) ) {
         }
 
 
-//
-//        $contact_form_id    = isset($_POST['_wpcf7']) ? sanitize_text_field($_POST['_wpcf7']) : '';
-//
-//        if( $contact_form_id != $contact_form->id() ) return;
-//
-//        $subscriber_id = wp_insert_post( array(
-//            'post_title'    => 'Response',
-//            'post_content'  => '',
-//            'post_type'     => 'subscriber',
-//            'post_status'   => 'publish',
-//        ), true );
-//
-//        if( is_wp_error( $subscriber_id ) ) return;
-//
-//
-//        $email_value = isset($_POST[$email_field_attr]) ? sanitize_email($_POST[$email_field_attr]) : '';
-//        $name_value = isset($_POST[$name_field_attr]) ? sanitize_text_field($_POST[$name_field_attr]) : '';
-//
-//
-//        wp_update_post( array(
-//            'ID'            => $subscriber_id,
-//            'post_title'    => '#' . $subscriber_id,
-//        ) );
-//
-//        update_post_meta( $subscriber_id, 'subscriber_email', $email_value );
-//        update_post_meta( $subscriber_id, 'first_name', $name_value );
+        //
+        //        $contact_form_id    = isset($_POST['_wpcf7']) ? sanitize_text_field($_POST['_wpcf7']) : '';
+        //
+        //        if( $contact_form_id != $contact_form->id() ) return;
+        //
+        //        $subscriber_id = wp_insert_post( array(
+        //            'post_title'    => 'Response',
+        //            'post_content'  => '',
+        //            'post_type'     => 'subscriber',
+        //            'post_status'   => 'publish',
+        //        ), true );
+        //
+        //        if( is_wp_error( $subscriber_id ) ) return;
+        //
+        //
+        //        $email_value = isset($_POST[$email_field_attr]) ? sanitize_email($_POST[$email_field_attr]) : '';
+        //        $name_value = isset($_POST[$name_field_attr]) ? sanitize_text_field($_POST[$name_field_attr]) : '';
+        //
+        //
+        //        wp_update_post( array(
+        //            'ID'            => $subscriber_id,
+        //            'post_title'    => '#' . $subscriber_id,
+        //        ) );
+        //
+        //        update_post_meta( $subscriber_id, 'email', $email_value );
+        //        update_post_meta( $subscriber_id, 'first_name', $name_value );
 
 
 
     }
 }
-add_action( 'wpcf7_submit', 'mail_picker_wpcf7_submit', 10, 1 );
+add_action('wpcf7_submit', 'mail_picker_wpcf7_submit', 10, 1);
 
 
 
 
-function mail_picker_wpforms_process_complete( $fields, $entry, $form_data, $entry_id ) {
+function mail_picker_wpforms_process_complete($fields, $entry, $form_data, $entry_id)
+{
 
     // Optional, you can limit to specific forms. Below, we restrict output to
     // form #5.
@@ -1581,7 +1519,7 @@ function mail_picker_wpforms_process_complete( $fields, $entry, $form_data, $ent
 
     $enable = isset($wpforms['enable']) ? $wpforms['enable'] : 'no';
 
-    if($enable != 'yes') return;
+    if ($enable != 'yes') return;
 
 
     $email_field_id = (isset($wpforms['email_field_id'])) ? $wpforms['email_field_id'] : '';
@@ -1593,16 +1531,16 @@ function mail_picker_wpforms_process_complete( $fields, $entry, $form_data, $ent
     $email_value = isset($entry['fields'][$email_field_id]) ? sanitize_email($entry['fields'][$email_field_id]) : '';
     $name_value = isset($entry['fields'][$name_field_id]) ? sanitize_text_field($entry['fields'][$name_field_id]) : '';
 
-//
-//    error_log($email_value);
-//    error_log($name_value);
+    //
+    //    error_log($email_value);
+    //    error_log($name_value);
 
     //error_log(serialize($entry['fields']));
 
 
 
     $formFieldData = array();
-    $formFieldData['subscriber_email'] = $email_value;
+    $formFieldData['email'] = $email_value;
     $formFieldData['first_name'] = $name_value;
     $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -1629,9 +1567,9 @@ function mail_picker_wpforms_process_complete( $fields, $entry, $form_data, $ent
 
 
     // Check for error in the response
-    if (is_wp_error($response)){
+    if (is_wp_error($response)) {
         echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-    }else{
+    } else {
         // data.
         $subscriber_data = json_decode(wp_remote_retrieve_body($response));
 
@@ -1661,33 +1599,33 @@ function mail_picker_wpforms_process_complete( $fields, $entry, $form_data, $ent
 
 
 
-//    $subscriber_id = wp_insert_post( array(
-//        'post_title'    => 'Response',
-//        'post_content'  => '',
-//        'post_type'     => 'subscriber',
-//        'post_status'   => 'publish',
-//    ), true );
-//
-//    if( is_wp_error( $subscriber_id ) ) return;
+    //    $subscriber_id = wp_insert_post( array(
+    //        'post_title'    => 'Response',
+    //        'post_content'  => '',
+    //        'post_type'     => 'subscriber',
+    //        'post_status'   => 'publish',
+    //    ), true );
+    //
+    //    if( is_wp_error( $subscriber_id ) ) return;
 
 
-//    error_log(serialize($fields));
-//    error_log(serialize($entry));
-
-
-
+    //    error_log(serialize($fields));
+    //    error_log(serialize($entry));
 
 
 
 
 
 
-        //update_post_meta( $subscriber_id, 'subscriber_email', $subscriber_id );
+
+
+
+    //update_post_meta( $subscriber_id, 'email', $subscriber_id );
 
 
 
 }
-add_action( 'wpforms_process_complete', 'mail_picker_wpforms_process_complete', 10, 4 );
+add_action('wpforms_process_complete', 'mail_picker_wpforms_process_complete', 10, 4);
 
 
 
@@ -1696,7 +1634,8 @@ add_action( 'wpforms_process_complete', 'mail_picker_wpforms_process_complete', 
 
 
 add_action('frm_after_create_entry', 'mail_picker_frm_after_create_entry', 30, 2);
-function mail_picker_frm_after_create_entry($entry_id, $form_id){
+function mail_picker_frm_after_create_entry($entry_id, $form_id)
+{
 
 
     $item_meta = mail_picker_recursive_sanitize_arr($_POST['item_meta']);
@@ -1707,7 +1646,7 @@ function mail_picker_frm_after_create_entry($entry_id, $form_id){
 
     $enable = isset($formidable['enable']) ? $formidable['enable'] : 'no';
 
-    if($enable != 'yes') return;
+    if ($enable != 'yes') return;
 
 
     $email_field_id = (isset($formidable['email_field_id'])) ? $formidable['email_field_id'] : '';
@@ -1725,7 +1664,7 @@ function mail_picker_frm_after_create_entry($entry_id, $form_id){
 
 
     $formFieldData = array();
-    $formFieldData['subscriber_email'] = $email_value;
+    $formFieldData['email'] = $email_value;
     $formFieldData['first_name'] = $name_value;
     $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -1752,9 +1691,9 @@ function mail_picker_frm_after_create_entry($entry_id, $form_id){
 
 
     // Check for error in the response
-    if (is_wp_error($response)){
+    if (is_wp_error($response)) {
         echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-    }else{
+    } else {
         // data.
         $subscriber_data = json_decode(wp_remote_retrieve_body($response));
 
@@ -1779,9 +1718,6 @@ function mail_picker_frm_after_create_entry($entry_id, $form_id){
 
 
     }
-
-
-
 }
 
 
@@ -1790,7 +1726,8 @@ function mail_picker_frm_after_create_entry($entry_id, $form_id){
 add_action('caldera_custom_form_submit_before_set_fields', 'mail_picker_caldera_custom_form_submit_before_set_fields', 10, 3);
 
 
-function mail_picker_caldera_custom_form_submit_before_set_fields($entry, $form_id, $field_data_array){
+function mail_picker_caldera_custom_form_submit_before_set_fields($entry, $form_id, $field_data_array)
+{
 
 
 
@@ -1800,7 +1737,7 @@ function mail_picker_caldera_custom_form_submit_before_set_fields($entry, $form_
 
     $enable = isset($caldera['enable']) ? $caldera['enable'] : 'no';
 
-    if($enable != 'yes') return;
+    if ($enable != 'yes') return;
 
 
     $email_field_id = (isset($caldera['email_field_id'])) ? $caldera['email_field_id'] : '';
@@ -1816,7 +1753,7 @@ function mail_picker_caldera_custom_form_submit_before_set_fields($entry, $form_
 
 
     $formFieldData = array();
-    $formFieldData['subscriber_email'] = $email_value;
+    $formFieldData['email'] = $email_value;
     $formFieldData['first_name'] = $name_value;
     $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -1843,9 +1780,9 @@ function mail_picker_caldera_custom_form_submit_before_set_fields($entry, $form_
 
 
     // Check for error in the response
-    if (is_wp_error($response)){
+    if (is_wp_error($response)) {
         echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-    }else{
+    } else {
         // data.
         $subscriber_data = json_decode(wp_remote_retrieve_body($response));
 
@@ -1870,10 +1807,6 @@ function mail_picker_caldera_custom_form_submit_before_set_fields($entry, $form_
 
 
     }
-
-
-
-
 }
 
 
@@ -1883,7 +1816,8 @@ function mail_picker_caldera_custom_form_submit_before_set_fields($entry, $form_
 add_action('caldera_forms_submit_complete', 'mail_picker_caldera_forms_submit_complete', 10, 3);
 
 
-function mail_picker_caldera_forms_submit_complete($form, $referrer, $process_id){
+function mail_picker_caldera_forms_submit_complete($form, $referrer, $process_id)
+{
 
 
     $mail_picker_settings = get_option('mail_picker_settings');
@@ -1892,7 +1826,7 @@ function mail_picker_caldera_forms_submit_complete($form, $referrer, $process_id
 
     $enable = isset($caldera['enable']) ? $caldera['enable'] : 'no';
 
-    if($enable != 'yes') return;
+    if ($enable != 'yes') return;
 
 
     $email_field_id = (isset($caldera['email_field_id'])) ? $caldera['email_field_id'] : '';
@@ -1907,7 +1841,7 @@ function mail_picker_caldera_forms_submit_complete($form, $referrer, $process_id
 
 
     $formFieldData = array();
-    $formFieldData['subscriber_email'] = $email_value;
+    $formFieldData['email'] = $email_value;
     $formFieldData['first_name'] = $name_value;
     $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -1934,9 +1868,9 @@ function mail_picker_caldera_forms_submit_complete($form, $referrer, $process_id
 
 
     // Check for error in the response
-    if (is_wp_error($response)){
+    if (is_wp_error($response)) {
         echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-    }else{
+    } else {
         // data.
         $subscriber_data = json_decode(wp_remote_retrieve_body($response));
 
@@ -1961,10 +1895,6 @@ function mail_picker_caldera_forms_submit_complete($form, $referrer, $process_id
 
 
     }
-
-
-
-
 }
 
 
@@ -1972,7 +1902,8 @@ function mail_picker_caldera_forms_submit_complete($form, $referrer, $process_id
 add_action('weforms_entry_submission', 'mail_picker_weforms_entry_submission', 10, 4);
 
 
-function mail_picker_weforms_entry_submission($entry_id, $form_id, $page_id, $form_settings){
+function mail_picker_weforms_entry_submission($entry_id, $form_id, $page_id, $form_settings)
+{
 
 
 
@@ -1982,7 +1913,7 @@ function mail_picker_weforms_entry_submission($entry_id, $form_id, $page_id, $fo
 
     $enable = isset($weforms['enable']) ? $weforms['enable'] : 'no';
 
-    if($enable != 'yes') return;
+    if ($enable != 'yes') return;
 
 
     $email_field_attr = (isset($weforms['email_field_attr'])) ? $weforms['email_field_attr'] : '';
@@ -1998,7 +1929,7 @@ function mail_picker_weforms_entry_submission($entry_id, $form_id, $page_id, $fo
 
 
     $formFieldData = array();
-    $formFieldData['subscriber_email'] = $email_value;
+    $formFieldData['email'] = $email_value;
     $formFieldData['first_name'] = $name_value;
     $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -2026,9 +1957,9 @@ function mail_picker_weforms_entry_submission($entry_id, $form_id, $page_id, $fo
 
 
     // Check for error in the response
-    if (is_wp_error($response)){
+    if (is_wp_error($response)) {
         echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-    }else{
+    } else {
         // data.
         $subscriber_data = json_decode(wp_remote_retrieve_body($response));
 
@@ -2053,10 +1984,6 @@ function mail_picker_weforms_entry_submission($entry_id, $form_id, $page_id, $fo
 
 
     }
-
-
-
-
 }
 
 
@@ -2066,7 +1993,8 @@ function mail_picker_weforms_entry_submission($entry_id, $form_id, $page_id, $fo
 
 add_filter('kaliforms_before_form_process', 'kaliforms_before_form_process');
 
-function kaliforms_before_form_process($data){
+function kaliforms_before_form_process($data)
+{
 
 
     $mail_picker_settings = get_option('mail_picker_settings');
@@ -2075,7 +2003,7 @@ function kaliforms_before_form_process($data){
 
     $enable = isset($kaliforms['enable']) ? $kaliforms['enable'] : 'no';
 
-    if($enable != 'yes') return;
+    if ($enable != 'yes') return;
 
 
     $email_field_attr = (isset($kaliforms['email_field_attr'])) ? $kaliforms['email_field_attr'] : '';
@@ -2089,7 +2017,7 @@ function kaliforms_before_form_process($data){
 
 
     $formFieldData = array();
-    $formFieldData['subscriber_email'] = $email_value;
+    $formFieldData['email'] = $email_value;
     $formFieldData['first_name'] = $name_value;
     $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -2113,9 +2041,9 @@ function kaliforms_before_form_process($data){
 
 
     // Check for error in the response
-    if (is_wp_error($response)){
+    if (is_wp_error($response)) {
         echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-    }else{
+    } else {
         // data.
         $subscriber_data = json_decode(wp_remote_retrieve_body($response));
 
@@ -2143,15 +2071,14 @@ function kaliforms_before_form_process($data){
 
 
     return $data;
-
-
 }
 
 
 
 add_filter('ig_es_add_subscriber_data', 'ig_es_add_subscriber_data', 10);
 
-function ig_es_add_subscriber_data($data){
+function ig_es_add_subscriber_data($data)
+{
 
 
 
@@ -2162,7 +2089,7 @@ function ig_es_add_subscriber_data($data){
 
     $enable = isset($email_subscribers['enable']) ? $email_subscribers['enable'] : 'no';
 
-    if($enable != 'yes') return;
+    if ($enable != 'yes') return;
 
 
     $email_field_attr = (isset($email_subscribers['email_field_attr'])) ? $email_subscribers['email_field_attr'] : '';
@@ -2180,7 +2107,7 @@ function ig_es_add_subscriber_data($data){
 
 
     $formFieldData = array();
-    $formFieldData['subscriber_email'] = $email_value;
+    $formFieldData['email'] = $email_value;
     $formFieldData['first_name'] = $name_value;
     $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -2207,9 +2134,9 @@ function ig_es_add_subscriber_data($data){
 
 
     // Check for error in the response
-    if (is_wp_error($response)){
+    if (is_wp_error($response)) {
         echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-    }else{
+    } else {
         // data.
         $subscriber_data = json_decode(wp_remote_retrieve_body($response));
 
@@ -2241,14 +2168,14 @@ function ig_es_add_subscriber_data($data){
 
 
 
-//    error_log(serialize($data));
-//
-//    $subscriber_id = wp_insert_post( array(
-//        'post_title'    => 'Response',
-//        'post_content'  => '',
-//        'post_type'     => 'subscriber',
-//        'post_status'   => 'publish',
-//    ), true );
+    //    error_log(serialize($data));
+    //
+    //    $subscriber_id = wp_insert_post( array(
+    //        'post_title'    => 'Response',
+    //        'post_content'  => '',
+    //        'post_type'     => 'subscriber',
+    //        'post_status'   => 'publish',
+    //    ), true );
 
 
 
@@ -2260,7 +2187,8 @@ function ig_es_add_subscriber_data($data){
 
 add_filter('mailoptin_optin_subscription_request_body', 'mailoptin_optin_subscription_request_body');
 
-function mailoptin_optin_subscription_request_body($optin_data){
+function mailoptin_optin_subscription_request_body($optin_data)
+{
 
 
 
@@ -2272,7 +2200,7 @@ function mailoptin_optin_subscription_request_body($optin_data){
 
     $enable = isset($email_subscribers['enable']) ? $email_subscribers['enable'] : 'no';
 
-    if($enable != 'yes') return;
+    if ($enable != 'yes') return;
 
 
     $email_field_attr = (isset($email_subscribers['email_field_attr'])) ? $email_subscribers['email_field_attr'] : 'mo-email';
@@ -2290,7 +2218,7 @@ function mailoptin_optin_subscription_request_body($optin_data){
 
 
     $formFieldData = array();
-    $formFieldData['subscriber_email'] = $email_value;
+    $formFieldData['email'] = $email_value;
     $formFieldData['first_name'] = $name_value;
     $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -2318,9 +2246,9 @@ function mailoptin_optin_subscription_request_body($optin_data){
 
 
     // Check for error in the response
-    if (is_wp_error($response)){
+    if (is_wp_error($response)) {
         echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-    }else{
+    } else {
         // data.
         $subscriber_data = json_decode(wp_remote_retrieve_body($response));
 
@@ -2345,24 +2273,24 @@ function mailoptin_optin_subscription_request_body($optin_data){
 
 
     }
-//
-//    $subscriber_id = wp_insert_post( array(
-//        'post_title'    => 'Response',
-//        'post_content'  => '',
-//        'post_type'     => 'subscriber',
-//        'post_status'   => 'publish',
-//    ), true );
+    //
+    //    $subscriber_id = wp_insert_post( array(
+    //        'post_title'    => 'Response',
+    //        'post_content'  => '',
+    //        'post_type'     => 'subscriber',
+    //        'post_status'   => 'publish',
+    //    ), true );
 
 
     return $optin_data;
-
 }
 
 
 
 add_filter('s2_confirm_email', 's2_confirm_email');
 
-function s2_confirm_email($confirm_email){
+function s2_confirm_email($confirm_email)
+{
 
     //error_log($confirm_email);
 
@@ -2374,7 +2302,8 @@ function s2_confirm_email($confirm_email){
 
 add_filter('newsletter_user_subscribe', 'newsletter_user_subscribe');
 
-function newsletter_user_subscribe($user){
+function newsletter_user_subscribe($user)
+{
 
 
     $mail_picker_settings = get_option('mail_picker_settings');
@@ -2383,7 +2312,7 @@ function newsletter_user_subscribe($user){
 
     $enable = isset($email_subscribers['enable']) ? $email_subscribers['enable'] : 'no';
 
-    if($enable != 'yes') return;
+    if ($enable != 'yes') return;
 
 
     $email_field_attr = (isset($email_subscribers['email_field_attr'])) ? $email_subscribers['email_field_attr'] : 'email';
@@ -2400,7 +2329,7 @@ function newsletter_user_subscribe($user){
 
 
     $formFieldData = array();
-    $formFieldData['subscriber_email'] = $email_value;
+    $formFieldData['email'] = $email_value;
     $formFieldData['first_name'] = $name_value;
     $formFieldData['subscriber_status'] = $subscriber_status;
 
@@ -2428,9 +2357,9 @@ function newsletter_user_subscribe($user){
 
 
     // Check for error in the response
-    if (is_wp_error($response)){
+    if (is_wp_error($response)) {
         echo __("Unexpected Error! The query returned with an error.", mail_picker_server_url);
-    }else{
+    } else {
         // data.
         $subscriber_data = json_decode(wp_remote_retrieve_body($response));
 
@@ -2455,22 +2384,15 @@ function newsletter_user_subscribe($user){
 
 
     }
-//
-//    $subscriber_id = wp_insert_post( array(
-//        'post_title'    => 'Response',
-//        'post_content'  => '',
-//        'post_type'     => 'subscriber',
-//        'post_status'   => 'publish',
-//    ), true );
+    //
+    //    $subscriber_id = wp_insert_post( array(
+    //        'post_title'    => 'Response',
+    //        'post_content'  => '',
+    //        'post_type'     => 'subscriber',
+    //        'post_status'   => 'publish',
+    //    ), true );
 
 
 
     return $user;
-
-
 }
-
-
-
-
-
