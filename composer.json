@@ -1,10 +1,21 @@
 {
     "name": "pickplugins5/mail-picker",
+    "description": "Sending mail was never easy before.",
+    "license": "GPL-2.0-or-later",
     "autoload": {
         "psr-4": {
             "Pickplugins5\\MailPicker\\": "src/"
         }
     },
+"require-dev": {
+		"wp-coding-standards/wpcs": "^2.3",
+		"phpcompatibility/phpcompatibility-wp": "^2.1"
+	},
+"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
     "authors": [
         {
             "name": "PickPlugins",
