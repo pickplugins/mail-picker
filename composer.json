@@ -1,0 +1,15 @@
+{
+    "name": "pickplugins5/mail-picker",
+    "autoload": {
+        "psr-4": {
+            "Pickplugins5\\MailPicker\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "PickPlugins",
+            "email": "32812881+pickplugins@users.noreply.github.com"
+        }
+    ],
+    "require": {}
+}
