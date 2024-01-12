@@ -2,122 +2,123 @@
 
 
 
-if ( ! defined('ABSPATH')) exit;  // if direct access 
+if (!defined('ABSPATH')) exit;  // if direct access 
 
 
-class class_mail_picker_manage_subscriber{
-	
-	public function __construct() {
+class class_mail_picker_manage_subscriber
+{
 
-        add_action('init', array( $this, 'check_subscriber' ));
-        add_action('init', array( $this, 'add_subscriber' ));
-        add_action('init', array( $this, 'unsubscribe' ));
-        add_action('init', array( $this, 'remove_subscriber' ));
-        add_action('init', array( $this, 'mail_track_open' ));
-        add_action('init', array( $this, 'link_click_track' ));
+    public function __construct()
+    {
 
-        add_action('init', array( $this, 'confirm_subscribe' ));
+        add_action('init', array($this, 'check_subscriber'));
+        add_action('init', array($this, 'add_subscriber'));
+        add_action('init', array($this, 'unsubscribe'));
+        add_action('init', array($this, 'remove_subscriber'));
+        add_action('init', array($this, 'mail_track_open'));
+        add_action('init', array($this, 'link_click_track'));
 
-
+        add_action('init', array($this, 'confirm_subscribe'));
     }
 
 
-    public function mail_track_open(){
+    public function mail_track_open()
+    {
 
-            if (preg_match('/mail-track-open/', $_SERVER['REQUEST_URI'])) {
+        if (preg_match('/mail-track-open/', $_SERVER['REQUEST_URI'])) {
 
-                $parts = isset($_SERVER['REQUEST_URI']) ? basename(esc_url_raw($_SERVER['REQUEST_URI'])) : '';
-
-
-                $parts = explode('-', $parts);
-
-                $campaign_id = isset($parts[3]) ? sanitize_text_field($parts[3]) : '';
-                $subscriber_id = isset($parts[4]) ?  sanitize_text_field($parts[4]) : '';
-
-                $subscriber_id = str_replace('.png','',$subscriber_id);
+            $parts = isset($_SERVER['REQUEST_URI']) ? basename(esc_url_raw($_SERVER['REQUEST_URI'])) : '';
 
 
-                if (!empty($campaign_id) && !empty($subscriber_id)) {
+            $parts = explode('-', $parts);
 
-                    mail_picker_update_post_meta($subscriber_id, 'mail_open_'.$campaign_id, $subscriber_id);
+            $campaign_id = isset($parts[3]) ? sanitize_text_field($parts[3]) : '';
+            $subscriber_id = isset($parts[4]) ?  sanitize_text_field($parts[4]) : '';
 
-                    $total_mail_open	= get_post_meta( $campaign_id, 'total_mail_open', true);
-                    update_post_meta($campaign_id, 'total_mail_open', (int)$total_mail_open+1);
+            $subscriber_id = str_replace('.png', '', $subscriber_id);
 
-                }
 
-                die();
+            if (!empty($campaign_id) && !empty($subscriber_id)) {
+
+                mail_picker_update_post_meta($subscriber_id, 'mail_open_' . $campaign_id, $subscriber_id);
+
+                $total_mail_open    = get_post_meta($campaign_id, 'total_mail_open', true);
+                update_post_meta($campaign_id, 'total_mail_open', (int)$total_mail_open + 1);
             }
 
+            die();
+        }
     }
 
 
 
-    public function link_click_track(){
+    public function link_click_track()
+    {
 
 
         if (isset($_REQUEST['mail_picker_action']) && trim($_REQUEST['mail_picker_action']) == 'link_click') {
 
             $campaign_id = isset($_REQUEST['campaign_id']) ? sanitize_text_field($_REQUEST['campaign_id']) : '';
             $subscriber_id = isset($_REQUEST['subscriber_id']) ? sanitize_text_field($_REQUEST['subscriber_id']) : '';
-            $redirect = isset($_REQUEST['redirect']) ? sanitize_text_field($_REQUEST['redirect']) : '';
+            $redirect = isset($_REQUEST['redirect']) ? esc_url_raw($_REQUEST['redirect']) : '';
 
 
-            mail_picker_update_post_meta($subscriber_id, 'link_click_'.$campaign_id, $subscriber_id);
+            error_log("redirect: $redirect");
 
-            $total_link_click	= get_post_meta( $campaign_id, 'total_link_click', true);
-            update_post_meta($campaign_id, 'total_link_click', (int)$total_link_click+1);
+            mail_picker_update_post_meta($subscriber_id, 'link_click_' . $campaign_id, $subscriber_id);
 
-            wp_safe_redirect($redirect);
-            exit;
-
+            $total_link_click    = get_post_meta($campaign_id, 'total_link_click', true);
+            update_post_meta($campaign_id, 'total_link_click', (int)$total_link_click + 1);
+            wp_redirect($redirect);
+            exit();
+            // wp_safe_redirect($redirect);
+            // exit;
         }
-
-
     }
 
 
-    public function confirm_subscribe(){
+    public function confirm_subscribe()
+    {
 
 
         if (isset($_REQUEST['mail_picker_action']) && trim($_REQUEST['mail_picker_action']) == 'confirm_subscribe') {
 
             $subscriber_form_id = isset($_REQUEST['subscriber_form_id']) ? sanitize_text_field($_REQUEST['subscriber_form_id']) : '';
             $subscriber_id = isset($_REQUEST['subscriber_id']) ? sanitize_text_field($_REQUEST['subscriber_id']) : '';
-            $redirect = isset($_REQUEST['redirect']) ? sanitize_text_field($_REQUEST['redirect']) : '';
+            $redirect = isset($_REQUEST['redirect']) ? esc_url_raw($_REQUEST['redirect']) : '';
 
-            $subscriber_status_after_confirm	= get_post_meta( $subscriber_form_id, 'subscriber_status_after_confirm', true);
-            $send_welcome_mail	= get_post_meta( $subscriber_form_id, 'send_welcome_mail', true);
-            $welcome_mail_template	= get_post_meta( $subscriber_form_id, 'welcome_mail_template', true);
+            $status_after_confirm    = get_post_meta($subscriber_form_id, 'status_after_confirm', true);
+            $send_welcome_mail    = get_post_meta($subscriber_form_id, 'send_welcome_mail', true);
+            $welcome_mail_template    = get_post_meta($subscriber_form_id, 'welcome_mail_template', true);
 
 
-            update_post_meta($subscriber_id, 'subscriber_status', $subscriber_status_after_confirm);
+            update_post_meta($subscriber_id, 'status', $status_after_confirm);
             $gmt_offset = get_option('gmt_offset');
 
-            $current_datetime = date('Y-m-d H:i:s', strtotime('+'.$gmt_offset.' hour'));
+            $current_datetime = date('Y-m-d H:i:s', strtotime('+' . $gmt_offset . ' hour'));
 
             update_post_meta($subscriber_id, 'last_active', $current_datetime);
 
 
-            mail_picker_update_post_meta($subscriber_id, 'confirm_subscribe_'.$subscriber_form_id, $subscriber_id);
+            mail_picker_update_post_meta($subscriber_id, 'confirm_subscribe_' . $subscriber_form_id, $subscriber_id);
             update_post_meta($subscriber_id, 'is_confirm', 'yes');
 
-            $total_confirm	= get_post_meta( $subscriber_form_id, 'total_confirm', true);
-            update_post_meta($subscriber_form_id, 'total_confirm', (int)$total_confirm+1);
+            $total_confirm    = get_post_meta($subscriber_form_id, 'total_confirm', true);
+            update_post_meta($subscriber_form_id, 'total_confirm', (int)$total_confirm + 1);
 
 
-            if($welcome_mail_template == 'yes'){
+            if ($welcome_mail_template == 'yes') {
 
 
 
                 $class_mail_picker_emails = new class_mail_picker_emails();
 
 
-                $mail_subject 	= get_post_meta( $subscriber_form_id, 'confirmation_mail_subject', true);
-                $from_email 	= get_post_meta( $subscriber_form_id, 'confirmation_mail_from_email', true);
-                $from_name 	= get_post_meta( $subscriber_form_id, 'confirmation_mail_from_name', true);
-                $reply_to_email 	= get_post_meta( $subscriber_form_id, 'confirmation_mail_reply_to_email', true);
-                $reply_to_name 	= get_post_meta( $subscriber_form_id, 'confirmation_mail_reply_to_name', true);
+                $mail_subject     = get_post_meta($subscriber_form_id, 'confirmation_mail_subject', true);
+                $from_email     = get_post_meta($subscriber_form_id, 'confirmation_mail_from_email', true);
+                $from_name     = get_post_meta($subscriber_form_id, 'confirmation_mail_from_name', true);
+                $reply_to_email     = get_post_meta($subscriber_form_id, 'confirmation_mail_reply_to_email', true);
+                $reply_to_name     = get_post_meta($subscriber_form_id, 'confirmation_mail_reply_to_name', true);
 
 
 
@@ -127,32 +128,32 @@ class class_mail_picker_manage_subscriber{
                 $site_url = get_bloginfo('url');
                 $site_logo_url = get_bloginfo('url');
 
-                $subscriber_email	= get_post_meta( $subscriber_id, 'subscriber_email', true);
-                $subscriber_phone 	= get_post_meta( $subscriber_id, 'subscriber_phone', true);
-                $subscriber_country_code 	= get_post_meta( $subscriber_id, 'subscriber_country_code', true);
+                $email    = get_post_meta($subscriber_id, 'email', true);
+                $subscriber_phone     = get_post_meta($subscriber_id, 'subscriber_phone', true);
+                $subscriber_country_code     = get_post_meta($subscriber_id, 'subscriber_country_code', true);
                 $subscriber_country = '';
-                $first_name 	= get_post_meta( $subscriber_id, 'first_name', true);
-                $last_name 	= get_post_meta( $subscriber_id, 'last_name', true);
-                $subscriber_name = $first_name.' '.$last_name;
-                $subscriber_avatar = get_avatar($subscriber_email,'50');
-                $subscriber_rating 	= get_post_meta( $subscriber_id, 'subscriber_rating', true);
-                $subscriber_status 	= get_post_meta( $subscriber_id, 'subscriber_status', true);
+                $first_name     = get_post_meta($subscriber_id, 'first_name', true);
+                $last_name     = get_post_meta($subscriber_id, 'last_name', true);
+                $subscriber_name = $first_name . ' ' . $last_name;
+                $subscriber_avatar = get_avatar($email, '50');
+                $subscriber_rating     = get_post_meta($subscriber_id, 'subscriber_rating', true);
+                $status     = get_post_meta($subscriber_id, 'status', true);
 
-                $mail_template_data = get_post( $welcome_mail_template );
+                $mail_template_data = get_post($welcome_mail_template);
 
-                $mail_template_content	= $mail_template_data->post_content;
+                $mail_template_content    = $mail_template_data->post_content;
 
                 $mail_template_content = do_shortcode($mail_template_content);
                 $mail_template_content = wpautop($mail_template_content);
 
 
                 $vars = array(
-                    '{site_name}'=> $site_name,
+                    '{site_name}' => $site_name,
                     '{site_description}' => $site_description,
                     '{site_url}' => $site_url,
                     '{site_logo_url}' => $site_logo_url,
 
-                    '{subscriber_email}' => $subscriber_email,
+                    '{email}' => $email,
                     '{first_name}' => $first_name,
                     '{last_name}' => $last_name,
                     '{subscriber_name}' => $subscriber_name,
@@ -160,7 +161,7 @@ class class_mail_picker_manage_subscriber{
                     '{subscriber_country}' => $subscriber_country,
                     '{subscriber_avatar}' => $subscriber_avatar,
                     '{subscriber_rating}' => $subscriber_rating,
-                    '{subscriber_status}' => $subscriber_status,
+                    '{status}' => $status,
                 );
 
                 $vars_args = array();
@@ -170,9 +171,9 @@ class class_mail_picker_manage_subscriber{
                 $vars = apply_filters('mail_picker_welcome_mail_vars', $vars, $vars_args);
 
 
-                $email_data['mail_to'] =  $subscriber_email;
+                $email_data['mail_to'] =  $email;
                 $email_data['mail_bcc'] =  $reply_to_email;
-                $email_data['mail_from'] = $from_email ;
+                $email_data['mail_from'] = $from_email;
                 $email_data['mail_from_name'] = $from_name;
                 $email_data['reply_to'] = $reply_to_email;
                 $email_data['reply_to_name'] = $reply_to_name;
@@ -183,12 +184,6 @@ class class_mail_picker_manage_subscriber{
 
 
                 $status = $class_mail_picker_emails->send_email($email_data);
-
-
-
-
-
-
             }
 
 
@@ -200,10 +195,7 @@ class class_mail_picker_manage_subscriber{
 
             wp_safe_redirect($redirect);
             exit;
-
         }
-
-
     }
 
 
@@ -211,26 +203,27 @@ class class_mail_picker_manage_subscriber{
 
 
 
-    public function check_subscriber(){
+    public function check_subscriber()
+    {
 
         if (isset($_REQUEST['mail_picker_action']) && trim($_REQUEST['mail_picker_action']) == 'check_subscriber') {
 
             $response = array();
 
 
-            $subscriber_email = isset($_REQUEST['email']) ? sanitize_email($_REQUEST['email']) : '';
+            $email = isset($_REQUEST['email']) ? sanitize_email($_REQUEST['email']) : '';
             $first_name = isset($_REQUEST['first_name']) ? sanitize_text_field($_REQUEST['first_name']) : '';
             $last_name = isset($_REQUEST['last_name']) ? sanitize_text_field($_REQUEST['last_name']) : '';
 
 
             $meta_query[] = array(
-                'key' => 'subscriber_email',
-                'value' => $subscriber_email,
+                'key' => 'email',
+                'value' => $email,
                 'compare' => '=',
             );
 
             $wp_query = new WP_Query(
-                array (
+                array(
                     'post_type' => 'subscriber',
                     'post_status' => 'publish',
                     'orderby' => 'date',
@@ -240,29 +233,29 @@ class class_mail_picker_manage_subscriber{
                 )
             );
 
-            if ($wp_query->have_posts()):
+            if ($wp_query->have_posts()) :
 
                 $response['subscriber_found'] = 'yes';
 
-                while ( $wp_query->have_posts() ) : $wp_query->the_post();
+                while ($wp_query->have_posts()) : $wp_query->the_post();
 
                     $subscriber_id = get_the_ID();
-                    $subscriber_email = get_post_meta($subscriber_id, 'subscriber_email', true);
+                    $email = get_post_meta($subscriber_id, 'email', true);
 
 
-                    $response['subscriber_email'] = $subscriber_email;
+                    $response['email'] = $email;
                     $response['subscriber_id'] = $subscriber_id;
 
 
                 endwhile;
 
                 wp_reset_query();
-            else:
+            else :
 
-                $args['subscriber_email'] = $subscriber_email;
+                $args['email'] = $email;
                 $args['first_name'] = $first_name;
                 $args['last_name'] = $last_name;
-                $args['subscriber_status'] = 'pending';
+                $args['status'] = 'pending';
 
 
                 //$create_response = $this->create_subscriber($args);
@@ -280,11 +273,11 @@ class class_mail_picker_manage_subscriber{
             echo json_encode($response);
             exit(0);
         }
-
     }
 
 
-    public function add_subscriber(){
+    public function add_subscriber()
+    {
 
         if (isset($_REQUEST['mail_picker_action']) && trim($_REQUEST['mail_picker_action']) == 'add_subscriber') {
 
@@ -296,23 +289,23 @@ class class_mail_picker_manage_subscriber{
             $formFieldData =  unserialize(base64_decode($formFieldData));
 
 
-            $subscriber_email = isset($formFieldData['subscriber_email']) ? sanitize_email($formFieldData['subscriber_email']) : '';
+            $email = isset($formFieldData['email']) ? sanitize_email($formFieldData['email']) : '';
             $first_name = isset($formFieldData['first_name']) ? sanitize_text_field($formFieldData['first_name']) : '';
             $last_name = isset($formFieldData['last_name']) ? sanitize_text_field($formFieldData['last_name']) : '';
-            $subscriber_status = isset($formFieldData['subscriber_status']) ? sanitize_text_field($formFieldData['subscriber_status']) : 'pending';
+            $status = isset($formFieldData['status']) ? sanitize_text_field($formFieldData['status']) : 'pending';
 
-            $subscriber_list = isset($_REQUEST['subscriber_list']) ? mail_picker_recursive_sanitize_arr( $_REQUEST['subscriber_list'] ) : array();
+            $subscriber_list = isset($_REQUEST['subscriber_list']) ? mail_picker_recursive_sanitize_arr($_REQUEST['subscriber_list']) : array();
 
 
 
             $meta_query[] = array(
-                'key' => 'subscriber_email',
-                'value' => $subscriber_email,
+                'key' => 'email',
+                'value' => $email,
                 'compare' => '=',
             );
 
             $wp_query = new WP_Query(
-                array (
+                array(
                     'post_type' => 'subscriber',
                     'post_status' => 'publish',
                     'orderby' => 'date',
@@ -322,37 +315,40 @@ class class_mail_picker_manage_subscriber{
                 )
             );
 
-            if ($wp_query->have_posts()):
+            if ($wp_query->have_posts()) :
 
                 $response['subscriber_found'] = 'yes';
 
-                while ( $wp_query->have_posts() ) : $wp_query->the_post();
+                while ($wp_query->have_posts()) : $wp_query->the_post();
 
                     $subscriber_id = get_the_ID();
-                    $subscriber_email = get_post_meta($subscriber_id, 'subscriber_email', true);
+                    $email = get_post_meta($subscriber_id, 'email', true);
 
 
-                    $response['subscriber_email'] = $subscriber_email;
+                    $response['email'] = $email;
                     $response['subscriber_id'] = $subscriber_id;
 
 
                 endwhile;
 
 
+                $response['email'] = $email;
                 $response['message'] = __('Subscriber already exist.', 'mail-picker');
                 $response['status'] = 'exist';
+                error_log("## - " . $email . " Subscriber already exist.");
 
                 wp_reset_query();
-            else:
+            else :
 
                 $args['formFieldData'] = $formFieldData;
 
-                $args['subscriber_email'] = $subscriber_email;
+                $args['email'] = $email;
                 $args['first_name'] = $first_name;
                 $args['last_name'] = $last_name;
-                $args['subscriber_status'] = $subscriber_status;
+                $args['status'] = $status;
                 $args['subscriber_list'] = $subscriber_list;
 
+                error_log($email . " Subscriber Created.");
 
 
                 $response = $this->create_subscriber($args);;
@@ -364,35 +360,34 @@ class class_mail_picker_manage_subscriber{
 
 
 
-
             echo json_encode($response);
             exit(0);
         }
-
     }
 
 
 
-    public function unsubscribe(){
+    public function unsubscribe()
+    {
 
         if (isset($_REQUEST['mail_picker_action']) && trim($_REQUEST['mail_picker_action']) == 'unsubscribe') {
 
             $response = array();
 
 
-            $subscriber_email = isset($_REQUEST['email']) ? sanitize_email($_REQUEST['email']) : '';
+            $email = isset($_REQUEST['email']) ? sanitize_email($_REQUEST['email']) : '';
             $first_name = isset($_REQUEST['first_name']) ? sanitize_text_field($_REQUEST['first_name']) : '';
             $last_name = isset($_REQUEST['last_name']) ? sanitize_text_field($_REQUEST['last_name']) : '';
 
 
             $meta_query[] = array(
-                'key' => 'subscriber_email',
-                'value' => $subscriber_email,
+                'key' => 'email',
+                'value' => $email,
                 'compare' => '=',
             );
 
             $wp_query = new WP_Query(
-                array (
+                array(
                     'post_type' => 'subscriber',
                     'post_status' => 'publish',
                     'orderby' => 'date',
@@ -402,22 +397,22 @@ class class_mail_picker_manage_subscriber{
                 )
             );
 
-            if ($wp_query->have_posts()):
+            if ($wp_query->have_posts()) :
 
                 $response['subscriber_found'] = 'yes';
 
-                while ( $wp_query->have_posts() ) : $wp_query->the_post();
+                while ($wp_query->have_posts()) : $wp_query->the_post();
 
                     $subscriber_id = get_the_ID();
-                    $subscriber_email = get_post_meta($subscriber_id, 'subscriber_email', true);
+                    $email = get_post_meta($subscriber_id, 'email', true);
 
 
-                    $response['subscriber_email'] = $subscriber_email;
+                    $response['email'] = $email;
                     $response['subscriber_id'] = $subscriber_id;
 
-                    update_post_meta( $subscriber_id, 'subscriber_status', 'canceled' );
+                    update_post_meta($subscriber_id, 'status', 'canceled');
 
-                    $response['subscriber_status'] = 'canceled';
+                    $response['status'] = 'canceled';
                     $response['message'] = 'Subscriber status canceled';
 
 
@@ -425,7 +420,7 @@ class class_mail_picker_manage_subscriber{
                 endwhile;
 
                 wp_reset_query();
-            else:
+            else :
 
 
                 $response['subscriber_found'] = 'no';
@@ -442,30 +437,30 @@ class class_mail_picker_manage_subscriber{
             echo json_encode($response);
             exit(0);
         }
-
     }
 
 
-    public function remove_subscriber(){
+    public function remove_subscriber()
+    {
 
         if (isset($_REQUEST['mail_picker_action']) && trim($_REQUEST['mail_picker_action']) == 'remove_subscriber') {
 
             $response = array();
 
 
-            $subscriber_email = isset($_REQUEST['email']) ? sanitize_email($_REQUEST['email']) : '';
+            $email = isset($_REQUEST['email']) ? sanitize_email($_REQUEST['email']) : '';
             $first_name = isset($_REQUEST['first_name']) ? sanitize_text_field($_REQUEST['first_name']) : '';
             $last_name = isset($_REQUEST['last_name']) ? sanitize_text_field($_REQUEST['last_name']) : '';
 
 
             $meta_query[] = array(
-                'key' => 'subscriber_email',
-                'value' => $subscriber_email,
+                'key' => 'email',
+                'value' => $email,
                 'compare' => '=',
             );
 
             $wp_query = new WP_Query(
-                array (
+                array(
                     'post_type' => 'subscriber',
                     'post_status' => 'publish',
                     'orderby' => 'date',
@@ -475,30 +470,28 @@ class class_mail_picker_manage_subscriber{
                 )
             );
 
-            if ($wp_query->have_posts()):
+            if ($wp_query->have_posts()) :
 
                 $response['subscriber_found'] = 'yes';
 
-                while ( $wp_query->have_posts() ) : $wp_query->the_post();
+                while ($wp_query->have_posts()) : $wp_query->the_post();
 
                     $subscriber_id = get_the_ID();
-                    $subscriber_email = get_post_meta($subscriber_id, 'subscriber_email', true);
+                    $email = get_post_meta($subscriber_id, 'email', true);
 
                     $response['subscriber_id'] = $subscriber_id;
 
-                    if(wp_delete_post($subscriber_id, false)){
+                    if (wp_delete_post($subscriber_id, false)) {
                         $response['is_removed'] = true;
-
-                    }else{
+                    } else {
                         $response['is_removed'] = false;
-
                     }
 
 
                 endwhile;
 
                 wp_reset_query();
-            else:
+            else :
 
 
                 $response['subscriber_found'] = 'no';
@@ -514,71 +507,69 @@ class class_mail_picker_manage_subscriber{
             echo json_encode($response);
             exit(0);
         }
-
     }
 
 
-    public function create_subscriber($args){
+    public function create_subscriber($args)
+    {
 
-		$response = array();
+        $response = array();
 
         $formFieldData = isset($args['formFieldData']) ? ($args['formFieldData']) : array();
 
-		$subscriber_email = isset($args['subscriber_email']) ? sanitize_email($args['subscriber_email']) : '';
-		$subscriber_status = isset($args['subscriber_status']) ? sanitize_text_field($args['subscriber_status']) : '';
-        $subscriber_list = isset($args['subscriber_list']) ? mail_picker_recursive_sanitize_arr( $args['subscriber_list'] ) : array();
+        $email = isset($args['email']) ? sanitize_email($args['email']) : '';
+        $status = isset($args['status']) ? sanitize_text_field($args['status']) : '';
+        $subscriber_list = isset($args['subscriber_list']) ? mail_picker_recursive_sanitize_arr($args['subscriber_list']) : array();
 
 
-		
-		if(!empty($subscriber_email)):
-		
-			$post_data = array(
-				'post_author' => 1,
-				'post_status' => 'publish',
-				'post_type' => 'subscriber',
-			);
-			
-			$post_id = wp_insert_post($post_data);
-			
-			
-			$post_data = array(
-			  'ID'           => $post_id,
-			  'post_title'   => '#'.$post_id,
-			 // 'post_content' => 'This is the updated content.',
-			);
-			
-			// Update the post into the database
-			wp_update_post( $post_data );	
+
+        if (!empty($email)) :
+
+            $post_data = array(
+                'post_author' => 1,
+                'post_status' => 'publish',
+                'post_type' => 'subscriber',
+            );
+
+            $post_id = wp_insert_post($post_data);
 
 
-			foreach ($formFieldData as $formFieldIndex => $formFieldValue){
+            $post_data = array(
+                'ID'           => $post_id,
+                'post_title'   => '#' . $post_id,
+                // 'post_content' => 'This is the updated content.',
+            );
 
-                update_post_meta( $post_id, $formFieldIndex, $formFieldValue );
+            // Update the post into the database
+            wp_update_post($post_data);
 
 
+            foreach ($formFieldData as $formFieldIndex => $formFieldValue) {
+
+                update_post_meta($post_id, $formFieldIndex, $formFieldValue);
             }
 
-			update_post_meta( $post_id, 'subscriber_status', $subscriber_status );
+            update_post_meta($post_id, 'status', $status);
 
 
-            wp_set_post_terms( $post_id, $subscriber_list, 'subscriber_list' );
+            wp_set_post_terms($post_id, $subscriber_list, 'subscriber_list');
 
-	
-			if(!empty($meta_data))
-			foreach($meta_data as $meta_key=>$meta_value){
-				update_post_meta( $post_id, $meta_key, $meta_value );
-			}
-							
-			$response['message'] = __('Subscriber created.', 'mail-picker');
-			$response['status'] = 'success';
+
+            if (!empty($meta_data))
+                foreach ($meta_data as $meta_key => $meta_value) {
+                    update_post_meta($post_id, $meta_key, $meta_value);
+                }
+
+            $response['message'] = __('Subscriber created.', 'mail-picker');
+            $response['status'] = 'success';
             $response['subscriber_id'] = $post_id;
 
             do_action('mail_picker_subscriber_created', $post_id);
 
 
-        else:
-			$response['message'] = __('Subscriber create failed.', 'mail-picker');
-			$response['status'] = 'fail';
+        else :
+            $response['message'] = __('Subscriber create failed.', 'mail-picker');
+            $response['status'] = 'fail';
 
             do_action('mail_picker_subscriber_create_failed', $response);
 
@@ -586,14 +577,8 @@ class class_mail_picker_manage_subscriber{
         endif;
 
 
-		return $response;
-
-	}
-
-
-
-
-
+        return $response;
+    }
 }
 
 new class_mail_picker_manage_subscriber();

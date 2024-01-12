@@ -1,11 +1,87 @@
 <?php
 
-if ( ! defined('ABSPATH')) exit;  // if direct access 
+if (!defined('ABSPATH')) exit;  // if direct access 
+
+add_action('subscriber_source_options_csv', 'subscriber_source_options_csv', 10);
+
+
+function subscriber_source_options_csv($source)
+{
+
+    $post_id =  $source['post_id'];
+
+    $csv = get_post_meta($post_id, 'csv', true);
+
+    $csv = !empty($csv) ? $csv : array();
+
+    $csv_url = isset($csv['csv_url']) ? $csv['csv_url'] : '';
+
+
+
+
+    $settings_tabs_field = new settings_tabs_field();
+
+
+
+    // Below code will print the all list of roles.
+    //echo '<pre>'.var_export($registered_users, true).'</pre>';
+
+
+
+
+
+    $args = array(
+        'id'        => 'csv_url',
+        'parent'        => 'csv',
+        'title'        => __('Uploaded CSV', 'mail-picker'),
+        'details'    => __('CSV Url', 'mail-picker'),
+        'type'        => 'text',
+        'value'        => $csv_url,
+        'default'        => '',
+    );
+
+    $settings_tabs_field->generate_field($args);
+}
+
+
+add_action('subscriber_source_meta_boxes_save', 'mail_picker_subscriber_source_meta_boxes_save_csv', 10);
+
+
+function mail_picker_subscriber_source_meta_boxes_save_csv($post_id)
+{
+    if (!isset($_POST['csv'])) return;
+
+
+    $csv = mail_picker_recursive_sanitize_arr($_POST['csv']);
+
+    $csv = isset($_POST['csv']) ? $csv : array();
+
+    update_post_meta($post_id, 'csv', $csv);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 add_action('subscriber_source_options_registered_users', 'subscriber_source_options_registered_users', 10);
 
 
-function subscriber_source_options_registered_users($source){
+function subscriber_source_options_registered_users($source)
+{
 
     $post_id =  $source['post_id'];
 
@@ -33,50 +109,49 @@ function subscriber_source_options_registered_users($source){
 
 
     $args = array(
-        'id'		=> 'user_role',
-        'parent'		=> 'registered_users',
-        'title'		=> __('User role','mail-picker'),
-        'details'	=> __('Choose user role.','mail-picker'),
-        'type'		=> 'select',
-        'value'		=> $user_role,
-        'default'		=> array(),
-        'args'		=> $roles,
+        'id'        => 'user_role',
+        'parent'        => 'registered_users',
+        'title'        => __('User role', 'mail-picker'),
+        'details'    => __('Choose user role.', 'mail-picker'),
+        'type'        => 'select',
+        'value'        => $user_role,
+        'default'        => array(),
+        'args'        => $roles,
     );
 
     $settings_tabs_field->generate_field($args);
 
 
     $args = array(
-        'id'		=> 'user_email_search',
-        'parent'		=> 'registered_users',
-        'title'		=> __('User email search','mail-picker'),
-        'details'	=> __('You can following string match, use comma to separate. <ul><li><b>^useremail</b> : String start with <b><i>useremail</i></b></li><li><b>useremail$</b> : String end by <b><i>useremail</i></b></li><li><b>useremail</b> : String contain <b><i>useremail</i></b></b></li></ul>','mail-picker'),
-        'type'		=> 'text',
-        'value'		=> $user_email_search,
-        'default'		=> '',
+        'id'        => 'user_email_search',
+        'parent'        => 'registered_users',
+        'title'        => __('User email search', 'mail-picker'),
+        'details'    => __('You can following string match, use comma to separate. <ul><li><b>^useremail</b> : String start with <b><i>useremail</i></b></li><li><b>useremail$</b> : String end by <b><i>useremail</i></b></li><li><b>useremail</b> : String contain <b><i>useremail</i></b></b></li></ul>', 'mail-picker'),
+        'type'        => 'text',
+        'value'        => $user_email_search,
+        'default'        => '',
     );
 
     $settings_tabs_field->generate_field($args);
-
-
-
-
-
 }
+
+
+
 
 
 add_action('subscriber_source_meta_boxes_save', 'mail_picker_subscriber_source_meta_boxes_save_registered_users', 10);
 
 
-function mail_picker_subscriber_source_meta_boxes_save_registered_users($post_id){
+function mail_picker_subscriber_source_meta_boxes_save_registered_users($post_id)
+{
 
+    if (!isset($_POST['registered_users'])) return;
 
     $registered_users = mail_picker_recursive_sanitize_arr($_POST['registered_users']);
 
     $registered_users = isset($_POST['registered_users']) ? $registered_users : array();
 
-    update_post_meta( $post_id, 'registered_users', $registered_users );
-
+    update_post_meta($post_id, 'registered_users', $registered_users);
 }
 
 
@@ -86,7 +161,8 @@ function mail_picker_subscriber_source_meta_boxes_save_registered_users($post_id
 add_action('mail_picker_subscriber_source_options_comments', 'mail_picker_subscriber_source_options_comments', 10);
 
 
-function mail_picker_subscriber_source_options_comments($source){
+function mail_picker_subscriber_source_options_comments($source)
+{
 
     $post_id =  $source['post_id'];
 
@@ -103,21 +179,20 @@ function mail_picker_subscriber_source_options_comments($source){
     //var_dump($comments);
 
     $args = array(
-        'id'		=> 'comment_status',
-        'parent'		=> 'comments',
-        'title'		=> __('Comment status','mail-picker'),
-        'details'	=> __('Choose comment status.','mail-picker'),
-        'type'		=> 'select',
-        'value'		=> $comment_status,
-        'default'		=> array(),
-        'args'		=> array(''=> __('All status','mail-picker'), '1'=>__('Approved','mail-picker'), '0'=>__('Pending','mail-picker') ,
-            'spam'=>__('Spam')),
+        'id'        => 'comment_status',
+        'parent'        => 'comments',
+        'title'        => __('Comment status', 'mail-picker'),
+        'details'    => __('Choose comment status.', 'mail-picker'),
+        'type'        => 'select',
+        'value'        => $comment_status,
+        'default'        => array(),
+        'args'        => array(
+            '' => __('All status', 'mail-picker'), '1' => __('Approved', 'mail-picker'), '0' => __('Pending', 'mail-picker'),
+            'spam' => __('Spam')
+        ),
     );
 
     $settings_tabs_field->generate_field($args);
-
-
-
 }
 
 
@@ -127,15 +202,16 @@ function mail_picker_subscriber_source_options_comments($source){
 add_action('subscriber_source_meta_boxes_save', 'mail_picker_subscriber_source_meta_boxes_save_comments', 10);
 
 
-function mail_picker_subscriber_source_meta_boxes_save_comments($post_id){
+function mail_picker_subscriber_source_meta_boxes_save_comments($post_id)
+{
 
+    if (!isset($_POST['comments'])) return;
 
     $comments = mail_picker_recursive_sanitize_arr($_POST['comments']);
 
     $comments = isset($_POST['comments']) ? $comments : array();
 
-    update_post_meta( $post_id, 'comments', $comments );
-
+    update_post_meta($post_id, 'comments', $comments);
 }
 
 
@@ -145,7 +221,8 @@ function mail_picker_subscriber_source_meta_boxes_save_comments($post_id){
 add_action('subscriber_source_options_woo_orders', 'subscriber_source_options_woo_orders', 10);
 
 
-function subscriber_source_options_woo_orders($source){
+function subscriber_source_options_woo_orders($source)
+{
 
     $post_id =  $source['post_id'];
 
@@ -159,36 +236,34 @@ function subscriber_source_options_woo_orders($source){
 
     $order_statuses = wc_get_order_statuses();
 
-    $order_statuses[] = __('All status','mail-picker');
+    $order_statuses[] = __('All status', 'mail-picker');
 
     $args = array(
-        'id'		=> 'order_status',
-        'parent'		=> 'woo_orders',
-        'title'		=> __('Order status','mail-picker'),
-        'details'	=> __('Choose order status.','mail-picker'),
-        'type'		=> 'select',
-        'value'		=> $order_status,
-        'default'		=> array(),
-        'args'		=> $order_statuses,
+        'id'        => 'order_status',
+        'parent'        => 'woo_orders',
+        'title'        => __('Order status', 'mail-picker'),
+        'details'    => __('Choose order status.', 'mail-picker'),
+        'type'        => 'select',
+        'value'        => $order_status,
+        'default'        => array(),
+        'args'        => $order_statuses,
     );
 
     $settings_tabs_field->generate_field($args);
 
 
     $args = array(
-        'id'		=> 'product_ids',
-        'parent'		=> 'woo_orders',
-        'title'		=> __('Product ids','mail-picker'),
-        'details'	=> __('Write product ids, use comma to separate.','mail-picker'),
-        'type'		=> 'text',
-        'value'		=> $product_ids,
-        'default'		=> '',
-        'placeholder'		=> '110,112',
+        'id'        => 'product_ids',
+        'parent'        => 'woo_orders',
+        'title'        => __('Product ids', 'mail-picker'),
+        'details'    => __('Write product ids, use comma to separate.', 'mail-picker'),
+        'type'        => 'text',
+        'value'        => $product_ids,
+        'default'        => '',
+        'placeholder'        => '110,112',
     );
 
     $settings_tabs_field->generate_field($args);
-
-
 }
 
 
@@ -199,24 +274,24 @@ function subscriber_source_options_woo_orders($source){
 add_action('subscriber_source_meta_boxes_save', 'subscriber_source_meta_boxes_save_woo_orders', 10);
 
 
-function subscriber_source_meta_boxes_save_woo_orders($post_id){
+function subscriber_source_meta_boxes_save_woo_orders($post_id)
+{
 
+    if (!isset($_POST['woo_orders'])) return;
 
     $woo_orders = mail_picker_recursive_sanitize_arr($_POST['woo_orders']);
 
     $woo_orders = isset($_POST['woo_orders']) ? $woo_orders : array();
 
-    update_post_meta( $post_id, 'woo_orders', $woo_orders );
-
-
-
+    update_post_meta($post_id, 'woo_orders', $woo_orders);
 }
 
 
 add_action('subscriber_source_options_ninjaform_sub', 'subscriber_source_options_ninjaform_sub', 10);
 
 
-function subscriber_source_options_ninjaform_sub($source){
+function subscriber_source_options_ninjaform_sub($source)
+{
 
     $post_id =  $source['post_id'];
 
@@ -228,21 +303,18 @@ function subscriber_source_options_ninjaform_sub($source){
 
 
     $args = array(
-        'id'		=> 'email_label',
-        'parent'		=> 'ninjaform_sub',
-        'title'		=> __('Email field label','mail-picker'),
-        'details'	=> __('Write ninja forms email field label.','mail-picker'),
-        'type'		=> 'text',
-        'value'		=> $email_label,
-        'default'		=> '',
-        'placeholder'		=> 'Email',
+        'id'        => 'email_label',
+        'parent'        => 'ninjaform_sub',
+        'title'        => __('Email field label', 'mail-picker'),
+        'details'    => __('Write ninja forms email field label.', 'mail-picker'),
+        'type'        => 'text',
+        'value'        => $email_label,
+        'default'        => '',
+        'placeholder'        => 'Email',
 
     );
 
     $settings_tabs_field->generate_field($args);
-
-
-
 }
 
 
@@ -251,15 +323,15 @@ function subscriber_source_options_ninjaform_sub($source){
 add_action('subscriber_source_meta_boxes_save', 'subscriber_source_meta_boxes_save_ninjaform_sub', 10);
 
 
-function subscriber_source_meta_boxes_save_ninjaform_sub($post_id){
+function subscriber_source_meta_boxes_save_ninjaform_sub($post_id)
+{
 
 
     $ninjaform_sub = mail_picker_recursive_sanitize_arr($_POST['ninjaform_sub']);
 
     $ninjaform_sub = isset($_POST['ninjaform_sub']) ? $ninjaform_sub : array();
 
-    update_post_meta( $post_id, 'ninjaform_sub', $ninjaform_sub );
-
+    update_post_meta($post_id, 'ninjaform_sub', $ninjaform_sub);
 }
 
 
@@ -269,7 +341,8 @@ function subscriber_source_meta_boxes_save_ninjaform_sub($post_id){
 add_action('subscriber_source_options_newsletter_subscribers', 'subscriber_source_options_newsletter_subscribers', 10);
 
 
-function subscriber_source_options_newsletter_subscribers($source){
+function subscriber_source_options_newsletter_subscribers($source)
+{
 
     $post_id =  $source['post_id'];
 
@@ -283,19 +356,17 @@ function subscriber_source_options_newsletter_subscribers($source){
 
 
     $args = array(
-        'id'		=> 'status',
-        'parent'		=> 'comments',
-        'title'		=> __('Subscriber status','mail-picker'),
-        'details'	=> __('Select subscriber status.','mail-picker'),
-        'type'		=> 'select',
-        'value'		=> $status,
-        'default'		=> array(),
-        'args'		=> array(''=> __('All status','mail-picker'), 'C'=>__('Confirmed','mail-picker'), 'S'=>__('Not confirmed','mail-picker'), 'U'=>__('Unsubscribed','mail-picker')),
+        'id'        => 'status',
+        'parent'        => 'comments',
+        'title'        => __('Subscriber status', 'mail-picker'),
+        'details'    => __('Select subscriber status.', 'mail-picker'),
+        'type'        => 'select',
+        'value'        => $status,
+        'default'        => array(),
+        'args'        => array('' => __('All status', 'mail-picker'), 'C' => __('Confirmed', 'mail-picker'), 'S' => __('Not confirmed', 'mail-picker'), 'U' => __('Unsubscribed', 'mail-picker')),
     );
 
     $settings_tabs_field->generate_field($args);
-
-
 }
 
 
@@ -304,16 +375,14 @@ function subscriber_source_options_newsletter_subscribers($source){
 add_action('subscriber_source_meta_boxes_save', 'mail_picker_subscriber_source_meta_boxes_save_newsletter_subscribers', 10);
 
 
-function mail_picker_subscriber_source_meta_boxes_save_newsletter_subscribers($post_id){
+function mail_picker_subscriber_source_meta_boxes_save_newsletter_subscribers($post_id)
+{
 
+    if (!isset($_POST['newsletter_subscribers'])) return;
 
     $newsletter_subscribers = mail_picker_recursive_sanitize_arr($_POST['newsletter_subscribers']);
 
     $newsletter_subscribers = isset($_POST['newsletter_subscribers']) ? $newsletter_subscribers : array();
 
-    update_post_meta( $post_id, 'newsletter_subscribers', $newsletter_subscribers );
-
+    update_post_meta($post_id, 'newsletter_subscribers', $newsletter_subscribers);
 }
-
-
-
