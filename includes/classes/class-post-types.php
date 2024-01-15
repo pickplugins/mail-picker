@@ -13,7 +13,7 @@ class class_mail_picker_post_types
         add_action('init', array($this, '_posttype_subscriber'), 0);
         add_action('init', array($this, '_posttype_subscriber_source'), 0);
 
-        //add_action('init', array($this, '_posttype_subscriber_form'), 0);
+        add_action('init', array($this, '_posttype_subscriber_form'), 0);
 
         add_action('init', array($this, '_posttype_mail_template'), 0);
         add_action('init', array($this, '_posttype_mail_campaign'), 0);

@@ -189,6 +189,7 @@ class MailPicker
 
     public function declare_classes()
     {
+        require_once(mail_picker_plugin_dir . 'includes/classes/class-mailpicker-subscribers.php');
 
         require_once(mail_picker_plugin_dir . 'includes/layout-elements.php');
 

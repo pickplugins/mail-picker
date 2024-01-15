@@ -63,7 +63,6 @@ class class_mail_picker_manage_subscriber
             $redirect = isset($_REQUEST['redirect']) ? esc_url_raw($_REQUEST['redirect']) : '';
 
 
-            error_log("redirect: $redirect");
 
             mail_picker_update_post_meta($subscriber_id, 'link_click_' . $campaign_id, $subscriber_id);
 
@@ -335,7 +334,6 @@ class class_mail_picker_manage_subscriber
                 $response['email'] = $email;
                 $response['message'] = __('Subscriber already exist.', 'mail-picker');
                 $response['status'] = 'exist';
-                error_log("## - " . $email . " Subscriber already exist.");
 
                 wp_reset_query();
             else :
@@ -348,7 +346,6 @@ class class_mail_picker_manage_subscriber
                 $args['status'] = $status;
                 $args['subscriber_list'] = $subscriber_list;
 
-                error_log($email . " Subscriber Created.");
 
 
                 $response = $this->create_subscriber($args);;
