@@ -6,13 +6,13 @@ add_action('wp_mail_failed', 'mail_picker_mail_error', 10, 1);
 function mail_picker_mail_error($wp_error)
 {
 
-    error_log(serialize($wp_error));
+    //error_log(serialize($wp_error));
     error_log($wp_error->get_error_message());
 }
 
 
 
-add_filter('wp_mail_from', 'mail_picker_sender_email');
+//add_filter('wp_mail_from', 'mail_picker_sender_email');
 
 // Function to change email address
 function mail_picker_sender_email($email_address)
@@ -27,7 +27,7 @@ function mail_picker_sender_email($email_address)
 }
 
 
-add_filter('wp_mail_from_name', 'mail_picker_sender_name');
+//add_filter('wp_mail_from_name', 'mail_picker_sender_name');
 
 // Function to change sender name
 function mail_picker_sender_name($email_from)
@@ -65,8 +65,8 @@ function mail_picker_ajax_send_test_mail()
     $class_mail_picker_emails = new class_mail_picker_emails();
 
     $email_data['mail_to'] =  $sendTo;
-    $email_data['mail_from'] = get_option('blog_name');
-    $email_data['mail_from_name'] = get_option('admin_email');
+    $email_data['mail_from'] = get_option('admin_email');
+    $email_data['mail_from_name'] = get_bloginfo('name');
 
 
     $email_data['mail_subject'] = $subject;
@@ -74,9 +74,10 @@ function mail_picker_ajax_send_test_mail()
     $email_data['attachments'] = array();
 
 
+
     $status = $class_mail_picker_emails->send_email($email_data);
 
-
+//error_log(serialize($status));
 
     if ($status) {
         $response['status'] = 'success';
@@ -135,10 +136,10 @@ function mail_picker_phpmailer($phpmailer)
 
     $mailer = 'smtp';
 
-    //    error_log('mail send via smtp');
+       // error_log('mail send via smtp');
     //
-    //    error_log(serialize($smtp_data));
-    //    error_log($auth);
+       // error_log(serialize($smtp_data));
+        //error_log($auth);
     //    error_log($port);
     //    error_log($autotls);
 

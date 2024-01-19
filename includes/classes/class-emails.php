@@ -13,25 +13,24 @@ class class_mail_picker_emails
     public function send_email($email_data)
     {
 
-        error_log("send_email");
+        //error_log("send_email");
 
         $mail_picker_settings = get_option('mail_picker_settings');
         $smtp_list = isset($mail_picker_settings['smtp']) ? $mail_picker_settings['smtp'] : array();
         $active_smtp = isset($mail_picker_settings['active_smtp']) ? $mail_picker_settings['active_smtp'] : 'wp';
         $api_data = isset($smtp_list[$active_smtp]) ? $smtp_list[$active_smtp] : array();
 
+//error_log($active_smtp);
 
-
-        if (!empty($active_smtp) && $active_smtp != 'wp') {
-
-            //$smtp_data['id'] = $active_smtp;
+        if ($active_smtp !== 'wp' && $active_smtp !== 'other_smtp') {
+  //error_log("email sending API: ".$active_smtp);
 
             return apply_filters('mail_picker_send_mail_via_api_' . $active_smtp, $email_data, $api_data);
-            //return $this->send_email_via_api($email_data, $smtp_data);
 
         }
 
-
+  
+  //error_log("email sending via SMTP: ".$active_smtp);
 
         $mail_to = isset($email_data['mail_to']) ? $email_data['mail_to'] : '';
         $mail_bcc = isset($email_data['mail_bcc']) ? $email_data['mail_bcc'] : '';
@@ -60,6 +59,9 @@ class class_mail_picker_emails
         $mail_headers = apply_filters('mail_picker_mail_headers', $headers);
 
         $status = wp_mail($mail_to, $mail_subject, $mail_body, $mail_headers, $mail_attachments);
+        
+          //error_log('$status: '.$status);
+
 
         return $status;
     }
