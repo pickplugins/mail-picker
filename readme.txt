@@ -4,7 +4,7 @@
 	Tags: Newsletter, Email Marketing, Email Subscriber, Email campaign
 	Requires at least: 4.1
 	Tested up to: 6.6
-	Stable tag: 1.0.13
+	Stable tag: 1.0.14
 	License: GPLv2 or later
 	License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
