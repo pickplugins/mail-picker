@@ -3,7 +3,7 @@
 Plugin Name: Mail Picker
 Plugin URI: http://pickplugins.com/item/mail-picker
 Description: Send newsletter and build email subscriber.
-Version: 1.0.13
+Version: 1.0.14
 Text Domain: mail-picker
 Author: PickPlugins
 Author URI: http://pickplugins.com
@@ -83,15 +83,11 @@ class MailPicker
             'interval'  => 300,
             'display'   => __('5 Minute', 'textdomain')
         );
-
-        $schedules['10minute'] = array(
-            'interval'  => 600,
-            'display'   => __('10 Minute', 'textdomain')
-        );
-        $schedules['30minute'] = array(
-            'interval'  => 1800,
-            'display'   => __('30 Minute', 'textdomain')
-        );
+        //
+        //        $schedules['10minute'] = array(
+        //            'interval'  => 600,
+        //            'display'   => __( '10 Minute', 'textdomain' )
+        //        );
 
 
         $schedules = array_merge($recurrence_interval, $schedules);
@@ -109,11 +105,11 @@ class MailPicker
 
 
         if (!wp_next_scheduled('mail_picker_campaign_check')) {
-            wp_schedule_event(time(), '30minute', 'mail_picker_campaign_check');
+            wp_schedule_event(time(), '1minute', 'mail_picker_campaign_check');
         }
 
         if (!wp_next_scheduled('mail_picker_subscriber_source_check')) {
-            wp_schedule_event(time(), '30minute', 'mail_picker_subscriber_source_check');
+            wp_schedule_event(time(), '1minute', 'mail_picker_subscriber_source_check');
         }
 
 
@@ -184,12 +180,10 @@ class MailPicker
 
         require_once(mail_picker_plugin_dir . 'includes/functions.php');
         require_once(mail_picker_plugin_dir . 'includes/functions-send-mail.php');
-        require_once(mail_picker_plugin_dir . 'includes/mail-picker-rest-end-points.php');
     }
 
     public function declare_classes()
     {
-        require_once(mail_picker_plugin_dir . 'includes/classes/class-mailpicker-subscribers.php');
 
         require_once(mail_picker_plugin_dir . 'includes/layout-elements.php');
 
