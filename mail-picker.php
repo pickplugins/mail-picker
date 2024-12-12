@@ -3,7 +3,7 @@
 Plugin Name: Mail Picker
 Plugin URI: http://pickplugins.com/item/mail-picker
 Description: Send newsletter and build email subscriber.
-Version: 1.0.14
+Version: 1.0.15
 Text Domain: mail-picker
 Author: PickPlugins
 Author URI: http://pickplugins.com

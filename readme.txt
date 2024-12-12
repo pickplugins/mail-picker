@@ -3,8 +3,8 @@
 	Donate link: http://pickplugins.com
 	Tags: Newsletter, Email Marketing, Email Subscriber, Email campaign
 	Requires at least: 4.1
-	Tested up to: 6.6
-	Stable tag: 1.0.14
+	Tested up to: 6.7
+	Stable tag: 1.0.15
 	License: GPLv2 or later
 	License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,6 +111,9 @@ You can create your own templates by using any page builder like Gutenberg and E
 
 
 == Changelog ==
+
+= 1.0.15 =
+* 2024-12-10 add - Removed subscriber forms.
 
 = 1.0.14 =
 * 2024-07-28 add - Default SMTP issue fixed
